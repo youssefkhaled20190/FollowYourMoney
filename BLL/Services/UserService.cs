@@ -1,4 +1,4 @@
-﻿using BLL.Mapping;
+using AutoMapper;
 using DAL.Interfaces;
 using DAL.Model;
 using Shared.DTO;
@@ -10,10 +10,12 @@ namespace BLL.Services
     {
         private readonly IUserRepository _repository;
         private readonly ILogsRepository _logs;
-        public UserService(IUserRepository repository, ILogsRepository logs) 
+        private readonly IMapper _mapper;
+        public UserService(IUserRepository repository, ILogsRepository logs, IMapper mapper) 
         {
             _repository = repository;
             _logs = logs;
+            _mapper = mapper;
         }
 
         // --- Create User ---
@@ -42,7 +44,7 @@ namespace BLL.Services
                     throw new ArgumentException("The role is not exists.");
                 }
 
-                var entity = ManualMapper.MapBase<NewUserDto, User>(dto);
+                var entity = _mapper.Map<User>(dto);
                 if (entity == null)
                 {
                     await transaction.RollbackAsync();
@@ -59,7 +61,7 @@ namespace BLL.Services
                     return null;
                 }
 
-                var result = ManualMapper.MapBase<User, UserDto>(createdUser);
+                var result = _mapper.Map<UserDto>(createdUser);
 
                 await _logs.AddAsync(new Logs
                 {
@@ -83,7 +85,7 @@ namespace BLL.Services
         {
             var filteredUserEntities = await _repository.GetAllAsync();
 
-            var dto = ManualMapper.MapList<User, UserDto>(filteredUserEntities);
+            var dto = _mapper.Map<List<UserDto>>(filteredUserEntities);
             return dto;
         }
 
@@ -93,7 +95,7 @@ namespace BLL.Services
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null) return null;
 
-            var dto = ManualMapper.MapBase<User, UserDto>(entity);
+            var dto = _mapper.Map<UserDto>(entity);
             return dto;
         }
 
@@ -134,7 +136,7 @@ namespace BLL.Services
                     throw new ArgumentException("The role is not exists.");
                 }
 
-                user = ManualMapper.MapBase < EditUserDto, User >(dto);
+                user = _mapper.Map<User>(dto);
                 if (user == null)
                 {
                     await transaction.RollbackAsync();
@@ -148,7 +150,7 @@ namespace BLL.Services
                     return null;
                 }
 
-                var result = ManualMapper.MapBase<User, UserDto>(updatedUser);
+                var result = _mapper.Map<UserDto>(updatedUser);
                 await _logs.AddAsync(new Logs
                 {
                     UserId = updatedBy,
@@ -231,7 +233,7 @@ namespace BLL.Services
         public async Task<List<Shared.DTO.RoleDto>> GetAllRoleAsync()
         {
             var roles = await _repository.GetAllRoleAsync();
-            var dto = ManualMapper.MapList<Microsoft.AspNetCore.Identity.IdentityRole, Shared.DTO.RoleDto>(roles);
+            var dto = _mapper.Map<List<Shared.DTO.RoleDto>>(roles);
             return dto;
         }
     }

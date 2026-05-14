@@ -37,6 +37,9 @@ namespace Api
             builder.Services.AddScoped<ITokenBlacklistService, InMemoryTokenBlacklistService>();
             builder.Services.AddScoped<IAuthRepository, AuthService>();
 
+            // AutoMapper - scans BLL assembly for Profile classes
+            builder.Services.AddAutoMapper(typeof(BLL.Profiles.AppMappingProfiles).Assembly);
+
             builder.Services.Scan(s => s
                 .FromAssembliesOf(typeof(UserRepository))
                 .AddClasses(c => c.Where(t => t.Name.EndsWith("Repository")))
@@ -138,7 +141,7 @@ namespace Api
             {
                 options.AddPolicy("AllowFrontend", policy =>
                     policy
-                        .AllowAnyOrigin() // for testing — restrict in production
+                        .AllowAnyOrigin() // for testing ï¿½ restrict in production
                         .AllowAnyMethod()
                         .AllowAnyHeader());
             });

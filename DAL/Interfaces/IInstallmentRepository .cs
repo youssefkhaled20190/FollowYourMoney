@@ -1,4 +1,5 @@
 ﻿using DAL.Model;
+using Shared.DTO;
 using SharedLib.Helper;
 using System;
 using System.Collections.Generic;
@@ -10,8 +11,8 @@ namespace DAL.Interfaces
 {
     public interface IInstallmentRepository : IGeneric<Installment>
     {
+        Task<PagedResults<Installment>> GetActiveByUserAsync(string userId, RequestDto<WithOutFilter> body);
 
-        Task<PagedResults<Installment>> GetActiveByUserAsync(string userId, int pageNumber, int pageSize);
-        Task<PagedResults<Installment>> GetCompletedByUserAsync(string userId, int pageNumber, int pageSize);
+        Task<PagedResults<Installment>> GetAllInstallmentsByUserAsync(string userId, RequestDto<WithOutFilter> body);
     }
 }

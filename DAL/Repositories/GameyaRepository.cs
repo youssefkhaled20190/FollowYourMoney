@@ -1,6 +1,8 @@
-﻿using DAL.Interfaces;
+﻿using DAL.Filter;
+using DAL.Interfaces;
 using DAL.Model;
 using Microsoft.EntityFrameworkCore;
+using Shared.DTO;
 using SharedLib.Helper;
 using System;
 using System.Collections.Generic;
@@ -17,10 +19,7 @@ namespace DAL.Repositories
         {
             
         }
-        public async Task<PagedResults<Gameya>> GetActiveByUserAsync(
-             string userId,
-             int pageNumber = 1,
-             int pageSize = 10)
+        public async Task<PagedResults<Gameya>> GetActiveByUserAsync(string userId, RequestDto<WithOutFilter> body)
         {
             try
             {
@@ -31,15 +30,15 @@ namespace DAL.Repositories
                 var totalCount = await query.CountAsync();
 
                 var pageItems = await query
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
+                    .Skip((body.PageNumber - 1) * body.PageSize)
+                    .Take(body.PageSize)
                     .ToListAsync();
 
                 return new PagedResults<Gameya>()
                 {
                     Items = pageItems,
-                    PageNumber = pageNumber,
-                    PageSize = pageSize,
+                    PageNumber = body.PageNumber,
+                    PageSize = body.PageSize,
                     TotalCount = totalCount
                 };
             }
