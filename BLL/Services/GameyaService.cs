@@ -6,18 +6,8 @@ using SharedLib.Helper;
 
 namespace BLL.Services
 {
-    public interface IGameyaService
-    {
-        Task<PagedResults<GameyaDto>> GetActiveByUserAsync(string userId, RequestDto<WithOutFilter> body);
-        Task<GameyaDetailDto?> GetWithPaymentsAsync(int gameyaId, string userId);
-        Task<GameyaDto?> CreateAsync(GameyaDto dto, string userId);
-        Task<bool> UpdateAsync(GameyaDto dto, string userId);
-        Task<bool> DeactivateAsync(int gameyaId, string userId);
-        Task<bool> DeleteAsync(int gameyaId, string userId);
-        Task<GameyaPaymentDto?> RecordPaymentAsync(GameyaPaymentDto dto, string userId);
-    }
 
-    public class GameyaService : IGameyaService
+    public class GameyaService 
     {
         private readonly IGameyaRepository _repository;
         private readonly IMapper _mapper;

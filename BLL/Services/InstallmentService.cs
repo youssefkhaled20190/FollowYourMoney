@@ -22,85 +22,85 @@ namespace BLL.Services
             _mapper = mapper;
         }
 
-        // --- Get Active Gameyas (Paged) ---
-        public async Task<PagedResults<GameyaDto>> GetActiveByUserAsync(string userId, RequestDto<WithOutFilter> body)
+       //get the active Installment by userid
+        public async Task<PagedResults<InstallmentDto>> GetActiveByUserAsync(string userId, RequestDto<WithOutFilter> body)
         {
             var pagedResult = await _installmentRepository.GetActiveByUserAsync(userId, body);
 
-            return new PagedResults<GameyaDto>
+            return new PagedResults<InstallmentDto>
             {
-                Items = _mapper.Map<List<GameyaDto>>(pagedResult.Items),
+                Items = _mapper.Map<List<InstallmentDto>>(pagedResult.Items),
                 PageNumber = pagedResult.PageNumber,
                 PageSize = pagedResult.PageSize,
                 TotalCount = pagedResult.TotalCount
             };
         }
 
-        // --- Get Gameya With Payment History ---
-        public async Task<GameyaDetailDto?> GetWithPaymentsAsync(int gameyaId, string userId)
+        //get all Installments by userid
+        public async Task<InstallmentDto?> GetAllInstallmentsAsync(string userId , RequestDto<WithOutFilter>body)
         {
-            var entity = await _repository.GetWithPaymentsAsync(gameyaId, userId);
+            var entity = await _installmentRepository.GetAllInstallmentsByUserAsync(userId , body);
             if (entity == null) return null;
 
-            return _mapper.Map<GameyaDetailDto>(entity);
+            return _mapper.Map<InstallmentDto>(entity);
         }
 
-        // --- Create Gameya ---
-        public async Task<GameyaDto?> CreateAsync(GameyaDto dto, string userId)
+        // --- Create installment ---
+        public async Task<InstallmentDto?> CreateAsync(InstallmentDto dto, string userId)
         {
-            var entity = _mapper.Map<Gameya>(dto);
+            var entity = _mapper.Map<Installment>(dto);
 
             entity.UserId = userId;
             entity.IsActive = true;
 
-            var created = await _repository.AddAsync(entity);
-            return _mapper.Map<GameyaDto>(created);
+            var created = await _installmentRepository.AddAsync(entity);
+            return _mapper.Map<InstallmentDto>(created);
         }
 
-        // --- Update Gameya ---
-        public async Task<bool> UpdateAsync(GameyaDto dto, string userId)
+        // --- Update Installment ---
+        public async Task<bool> UpdateAsync(InstallmentDto dto, string userId)
         {
-            var existing = await _repository.GetByIdAsync(dto.GameyaId);
+            var existing = await _installmentRepository.GetByIdAsync(dto.InstallmentId);
             if (existing == null)
-                throw new ArgumentException("Gameya not found.");
+                throw new ArgumentException("Installment not found.");
 
             if (existing.UserId != userId)
                 throw new UnauthorizedAccessException("You do not own this Gameya.");
 
             existing.Name = dto.Name;
-            existing.MonthlyContribution = dto.MonthlyContribution;
-            existing.TotalMembers = dto.TotalMembers;
-            existing.MyTurn = dto.MyTurn;
             existing.StartDate = dto.StartDate;
+            existing.TotalMonths = dto.TotalMonths;
+            existing.PaidMonths = dto.PaidMonths;
+            
 
-            return await _repository.UpdateAsync(existing);
+            return await _installmentRepository.UpdateAsync(existing);
         }
 
-        // --- Deactivate Gameya ---
-        public async Task<bool> DeactivateAsync(int gameyaId, string userId)
+        // --- Deactivate Installment ---
+        public async Task<bool> DeactivateAsync(int InstallmentId, string userId)
         {
-            var entity = await _repository.GetByIdAsync(gameyaId);
+            var entity = await _installmentRepository.GetByIdAsync(InstallmentId);
             if (entity == null)
-                throw new ArgumentException("Gameya not found.");
+                throw new ArgumentException("Installment not found.");
 
             if (entity.UserId != userId)
-                throw new UnauthorizedAccessException("You do not own this Gameya.");
+                throw new UnauthorizedAccessException("You do not own this Installment.");
 
             entity.IsActive = false;
-            return await _repository.UpdateAsync(entity);
+            return await _installmentRepository.UpdateAsync(entity);
         }
 
-        // --- Delete Gameya ---
-        public async Task<bool> DeleteAsync(int gameyaId, string userId)
+        // --- Delete Installment ---
+        public async Task<bool> DeleteAsync(int InstallmentId, string userId)
         {
-            var entity = await _repository.GetByIdAsync(gameyaId);
+            var entity = await _installmentRepository.GetByIdAsync(InstallmentId);
             if (entity == null)
-                throw new ArgumentException("Gameya not found.");
+                throw new ArgumentException("Installment not found.");
 
             if (entity.UserId != userId)
-                throw new UnauthorizedAccessException("You do not own this Gameya.");
+                throw new UnauthorizedAccessException("You do not own this Installment.");
 
-            return await _repository.DeleteAsync(gameyaId);
+            return await _installmentRepository.DeleteAsync(InstallmentId);
         }
 
     }

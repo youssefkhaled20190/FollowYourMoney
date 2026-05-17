@@ -16,6 +16,7 @@ namespace DAL.Context
         public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
         public DbSet<WeeklyBudget> WeeklyBudgets => Set<WeeklyBudget>();
         public DbSet<Expense> Expenses => Set<Expense>();
+        public DbSet<Logs> Logs => Set<Logs>();
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)

@@ -34,9 +34,28 @@ namespace BLL.Profiles
             CreateMap<GameyaPaymentDto, GameyaPayment>()
                 .ForMember(d => d.Type, o => o.MapFrom(s => Enum.Parse<DAL.Enums.PaymentType>(s.Type, true)));
 
-            // ─── Installment Mappings ────────────────────────────────────
+            // ─── Installment Mappings ───────────────────────────────
             CreateMap<Installment, InstallmentDto>().ReverseMap();
 
+            // ─── MonthlySnapshot Mappings ───────────────────────────
+            CreateMap<MonthlySnapshot, MonthlySnapshotDto>()
+                .ForMember(d => d.WeeklyBudgets, o => o.Ignore())   // filled manually by service
+                .ForMember(d => d.WishlistSummary, o => o.Ignore()); // filled manually by service
+            CreateMap<MonthlySnapshotDto, MonthlySnapshot>()
+                .ForMember(d => d.WeeklyBudgets, o => o.Ignore())
+                .ForMember(d => d.Triggers, o => o.Ignore());
+
+            // ─── WeeklyBudget Mappings ──────────────────────────────
+            CreateMap<WeeklyBudget, WeeklyBudgetDto>()
+                .ForMember(d => d.SpentAmount, o => o.Ignore());     // computed from Expenses list
+            CreateMap<WeeklyBudgetDto, WeeklyBudget>()
+                .ForMember(d => d.Snapshot, o => o.Ignore())
+                .ForMember(d => d.Expenses, o => o.Ignore());
+
+            // ─── WishlistItem Mappings ──────────────────────────────
+            CreateMap<WishlistItem, WishlistItemDto>()
+                .ForMember(d => d.EtaMonths, o => o.Ignore());       // computed by service
+            CreateMap<WishlistItemDto, WishlistItem>();
         }
     }
 }

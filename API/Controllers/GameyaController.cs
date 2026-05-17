@@ -10,17 +10,29 @@ namespace API.Controllers
     [Authorize]
     public class GameyaController : BaseController
     {
-        private readonly IGameyaService _gameyaService;
+        private readonly GameyaService _gameyaService;
 
-        public GameyaController(IGameyaService gameyaService)
+        public GameyaController(GameyaService gameyaService)
         {
             _gameyaService = gameyaService;
         }
 
-        [HttpPost("List")]
-        public async Task<ActionResult> GetActiveList([FromBody] RequestDto<WithOutFilter> body)
+        [HttpGet("List")]
+        public async Task<ActionResult> GetActiveList([FromQuery] RequestDto<WithOutFilter> body)
         {
             var result = await _gameyaService.GetActiveByUserAsync(CurrentUserId, body);
+            return StatusCode(200, new GeneralResponseDto
+            {
+                Result = true,
+                Message = "Gameyas listed successfully",
+                Data = result
+            });
+        }
+
+        [HttpGet("ListWithPayments")]
+        public async Task<ActionResult> GetActiveListPayments(int GamayaId)
+        {
+            var result = await _gameyaService.GetWithPaymentsAsync(GamayaId, CurrentUserId);
             return StatusCode(200, new GeneralResponseDto
             {
                 Result = true,
@@ -59,20 +71,6 @@ namespace API.Controllers
             });
         }
 
-        [HttpPost("Update")]
-        public async Task<ActionResult> Update([FromBody] GameyaDto dto)
-        {
-            var updated = await _gameyaService.UpdateAsync(dto, CurrentUserId);
-            if (!updated)
-                return StatusCode(200, new GeneralResponseDto { Result = false, Message = "Could not update Gameya" });
-
-            return StatusCode(200, new GeneralResponseDto
-            {
-                Result = true,
-                Message = "Gameya updated successfully"
-            });
-        }
-
         [HttpPost("Deactivate/{id}")]
         public async Task<ActionResult> Deactivate(int id)
         {
@@ -84,20 +82,6 @@ namespace API.Controllers
             {
                 Result = true,
                 Message = "Gameya deactivated successfully"
-            });
-        }
-
-        [HttpDelete("Delete/{id}")]
-        public async Task<ActionResult> Delete(int id)
-        {
-            var deleted = await _gameyaService.DeleteAsync(id, CurrentUserId);
-            if (!deleted)
-                return StatusCode(200, new GeneralResponseDto { Result = false, Message = "Could not delete Gameya" });
-
-            return StatusCode(200, new GeneralResponseDto
-            {
-                Result = true,
-                Message = "Gameya deleted successfully"
             });
         }
 
@@ -115,5 +99,37 @@ namespace API.Controllers
                 Data = payment
             });
         }
+
+        [HttpPut("Update")]
+        public async Task<ActionResult> Update([FromBody] GameyaDto dto )
+        {
+            var updated = await _gameyaService.UpdateAsync(dto, CurrentUserId);
+            if (!updated)
+                return StatusCode(200, new GeneralResponseDto { Result = false, Message = "Could not update Gameya" });
+
+            return StatusCode(200, new GeneralResponseDto
+            {
+                Result = true,
+                Message = "Gameya updated successfully"
+            });
+        }
+
+ 
+
+        [HttpDelete("Delete/{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var deleted = await _gameyaService.DeleteAsync(id, CurrentUserId);
+            if (!deleted)
+                return StatusCode(200, new GeneralResponseDto { Result = false, Message = "Could not delete Gameya" });
+
+            return StatusCode(200, new GeneralResponseDto
+            {
+                Result = true,
+                Message = "Gameya deleted successfully"
+            });
+        }
+
+
     }
 }
