@@ -1,22 +1,29 @@
 import React, { useEffect, useState } from "react";
 import "remixicon/fonts/remixicon.css";
+import { useFormik } from "formik";
+import * as yup from "yup";
 import { useSelector, useDispatch } from "react-redux";
 import useTranslate from "../../src/Hooks/Translation/useTranslate";
 import { SET_LANGUAGE } from "../Redux/actions/languageActions.js";
-
+import { loginUser } from "../Redux/actions/authAction.js";
+import { useNavigate } from "react-router-dom";
+import { createPostRequest } from "../Hooks/Services/Requests.js";
+import WalletLoader from "../Components/UI/Walletloader";
 
 const Auth = () => {
-    const [showPassword, setShowPassword]       = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [showRegPassword, setShowRegPassword] = useState(false);
-    const [activeTab, setActiveTab]             = useState("login");
-    const [agreedToTerms, setAgreedToTerms]     = useState(false);
-
-    const { t }       = useTranslate();
-    const dispatch    = useDispatch();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [activeTab, setActiveTab] = useState("login");
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const { t } = useTranslate();
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
     const currentLang = useSelector((state) => state.language.lang);
 
     useEffect(() => {
-        document.documentElement.dir  = currentLang === "ar" ? "rtl" : "ltr";
+        document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
         document.documentElement.lang = currentLang;
     }, [currentLang]);
 
@@ -24,6 +31,60 @@ const Auth = () => {
         dispatch({ type: SET_LANGUAGE, payload: currentLang === "ar" ? "en" : "ar" });
     };
 
+    const loginValidation = yup.object({
+        userName: yup.string().required(t("User Name is required")),
+        password: yup.string().required(t("Password is required")),
+    });
+
+    const registerValidation = yup.object({
+        userName: yup.string().required(t("User Name is required")),
+        email: yup.string().email(t("Invalid email format")).required(t("Email is required")),
+        password: yup.string().min(6, t("Password must be at least 6 characters")).required(t("Password is required")),
+        confirmPassword: yup.string().oneOf([yup.ref("password"), null], t("Passwords must match")).required(t("Confirm Password is required")),
+    });
+
+    const loginFormik = useFormik({
+        initialValues: { userName: "", password: "" },
+        validationSchema: loginValidation,
+        onSubmit: async (values, { setSubmitting }) => {
+            setError("");
+            setIsLoading(true);
+            const result = await dispatch(loginUser(values.userName, values.password));
+
+            if (result.success) {
+                navigate(result.defaultPage || "/");
+            } else {
+                setError(t("Invalid credentials"));
+            }
+
+            setIsLoading(false);
+            setSubmitting(false);
+        },
+    });
+
+    const registerFormik = useFormik({
+        initialValues: { userName: "", email: "", password: "", confirmPassword: "" , role: "Admin"},
+        validationSchema: registerValidation,
+        onSubmit: async (values, { setSubmitting }) => {
+            setError("");
+            setIsLoading(true);
+            const result = await createPostRequest("/Auth/Register", {
+                userName: values.userName,
+                email: values.email,
+                password: values.password,
+                confirmPassword: values.confirmPassword,
+                role: values.role
+            });
+
+            setIsLoading(false);
+            setSubmitting(false);
+        },
+    });
+
+
+    if (isLoading) {
+        return <WalletLoader message={t("Logging in")} />;
+    }
 
     return (
         <div className="
@@ -60,7 +121,7 @@ const Auth = () => {
             {/* ── Auth Card ── */}
             <div className="
                 w-full
-                max-w-3xl
+                max-w-lg
                 h-auto
                 max-h-[95vh]
                 bg-surface-container-lowest
@@ -97,24 +158,30 @@ const Auth = () => {
 
 
                 {/* ── Form Body ── */}
-                <div className="p-6 tab-md:p-8 lg:p-10 3xl:p-12">
+                <div className="p-4 tab-md:p-5 lg:p-6 3xl:p-8">
 
                     {/* ════ LOGIN ════ */}
                     {activeTab === "login" && (
-                        <div className="flex flex-col gap-5 tab-md:gap-6 3xl:gap-7">
+                        <form onSubmit={loginFormik.handleSubmit} className="flex flex-col gap-3 tab-md:gap-4 3xl:gap-5">
+                            {/* Error Message */}
+                            {error && (
+                                <div className="p-3 bg-error/10 border border-error rounded-lg">
+                                    <p className="text-error text-body-sm">{error}</p>
+                                </div>
+                            )}
 
-                            {/* Email */}
+                            {/* User Name */}
                             <div className="flex flex-col gap-2">
                                 <label className="
                                     font-label-caps
                                     text-label-caps
                                     text-on-surface-variant
                                 ">
-                                    {t("Email Address")}
+                                    {t("User Name")}
                                 </label>
                                 <div className="relative">
                                     <i className="
-                                        ri-mail-line
+                                        ri-user-line
                                         absolute top-1/2 -translate-y-1/2
                                         ltr:left-4 rtl:right-4
                                         text-on-surface-variant
@@ -122,13 +189,15 @@ const Auth = () => {
                                         pointer-events-none
                                     "></i>
                                     <input
-                                        type="email"
-                                        placeholder="ahmed@example.com"
-                                        className="
+                                        type="text"
+                                        name="userName"
+                                        placeholder="username"
+                                        {...loginFormik.getFieldProps("userName")}
+                                        className={`
                                             w-full
-                                            h-12 tab-md:h-13 lg:h-14 3xl:h-16
+                                            h-10 tab-md:h-11 lg:h-12 3xl:h-14
                                             bg-surface-container-low
-                                            border border-outline-variant
+                                            border ${loginFormik.touched.userName && loginFormik.errors.userName ? "border-error" : "border-outline-variant"}
                                             rounded-lg tab-md:rounded-lg lg:rounded-xl
                                             ltr:pl-12 rtl:pr-12
                                             tab-md:ltr:pl-14 tab-md:rtl:pr-14
@@ -137,11 +206,14 @@ const Auth = () => {
                                             text-body-md
                                             text-on-surface
                                             placeholder:text-on-surface-variant/50
-                                            focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-fixed-dim
+                                            focus:outline-none focus:ring-2 ${loginFormik.touched.userName && loginFormik.errors.userName ? "focus:ring-error" : "focus:ring-secondary-fixed-dim"}
                                             transition-all
-                                        "
+                                        `}
                                     />
                                 </div>
+                                {loginFormik.touched.userName && loginFormik.errors.userName && (
+                                    <p className="text-error text-body-sm">{loginFormik.errors.userName}</p>
+                                )}
                             </div>
 
                             {/* Password */}
@@ -174,12 +246,14 @@ const Auth = () => {
                                     "></i>
                                     <input
                                         type={showPassword ? "text" : "password"}
+                                        name="password"
                                         placeholder="••••••••"
-                                        className="
+                                        {...loginFormik.getFieldProps("password")}
+                                        className={`
                                             w-full
-                                            h-12 tab-md:h-13 lg:h-14 3xl:h-16
+                                            h-10 tab-md:h-11 lg:h-12 3xl:h-14
                                             bg-surface-container-low
-                                            border border-outline-variant
+                                            border ${loginFormik.touched.password && loginFormik.errors.password ? "border-error" : "border-outline-variant"}
                                             rounded-lg tab-md:rounded-lg lg:rounded-xl
                                             ltr:pl-12 rtl:pr-12
                                             tab-md:ltr:pl-14 tab-md:rtl:pr-14
@@ -189,9 +263,9 @@ const Auth = () => {
                                             text-body-md
                                             text-on-surface
                                             placeholder:text-on-surface-variant/50
-                                            focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-fixed-dim
+                                            focus:outline-none focus:ring-2 ${loginFormik.touched.password && loginFormik.errors.password ? "focus:ring-error" : "focus:ring-secondary-fixed-dim"}
                                             transition-all
-                                        "
+                                        `}
                                     />
                                     <i
                                         className={`
@@ -205,26 +279,32 @@ const Auth = () => {
                                         onClick={() => setShowPassword(!showPassword)}
                                     ></i>
                                 </div>
+                                {loginFormik.touched.password && loginFormik.errors.password && (
+                                    <p className="text-error text-body-sm">{loginFormik.errors.password}</p>
+                                )}
                             </div>
 
                             {/* Login Button */}
-                            <button className="
-                                w-full
-                                h-12 tab-md:h-13 lg:h-14 3xl:h-16
-                                bg-primary hover:opacity-85 active:opacity-70
-                                text-surface
-                                font-Cairo font-bold
-                                text-label-caps 3xl:text-body-sm
-                                tracking-widest uppercase
-                                rounded-lg tab-md:rounded-lg lg:rounded-xl
-                                transition-all duration-150
-                                mt-2 tab-md:mt-3
-                            ">
-                                {t("Login")}
+                            <button 
+                                type="submit" 
+                                disabled={isLoading || loginFormik.isSubmitting}
+                                className="
+                                    w-full
+                                    h-10 tab-md:h-11 lg:h-12 3xl:h-14
+                                    bg-primary hover:opacity-85 active:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed
+                                    text-surface
+                                    font-Cairo font-bold
+                                    text-label-caps 3xl:text-body-sm
+                                    tracking-widest uppercase
+                                    rounded-lg tab-md:rounded-lg lg:rounded-xl
+                                    transition-all duration-150
+                                    mt-2 tab-md:mt-2
+                                ">
+                                {isLoading || loginFormik.isSubmitting ? t("Loading...") : t("Login")}
                             </button>
 
                             {/* Divider */}
-                            <div className="flex items-center gap-3 my-2 tab-md:my-3">
+                            <div className="flex items-center gap-3 my-1 tab-md:my-2">
                                 <hr className="flex-1 border-none border-t border-outline-variant h-px bg-outline-variant" />
                                 <span className="
                                     font-body-sm
@@ -238,14 +318,14 @@ const Auth = () => {
                             </div>
 
                             {/* Social Buttons */}
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-2 gap-2">
                                 {[
                                     { icon: "ri-google-fill", label: "Google" },
                                     { icon: "ri-github-fill", label: "GitHub" },
                                 ].map(({ icon, label }) => (
                                     <button key={label} className="
                                         flex items-center justify-center gap-2
-                                        h-12 tab-md:h-13 lg:h-14 3xl:h-16
+                                        h-10 tab-md:h-11 lg:h-12 3xl:h-14
                                         bg-surface-container-lowest
                                         border border-outline-variant
                                         hover:bg-surface-container-low
@@ -260,22 +340,28 @@ const Auth = () => {
                                     </button>
                                 ))}
                             </div>
-                        </div>
+                        </form>
                     )}
 
 
                     {/* ════ REGISTER ════ */}
                     {activeTab === "register" && (
-                        <div className="flex flex-col gap-5 tab-md:gap-6 3xl:gap-7">
+                        <form onSubmit={registerFormik.handleSubmit} className="flex flex-col gap-3 tab-md:gap-4 3xl:gap-5">
+                            {/* Error Message */}
+                            {error && (
+                                <div className="p-3 bg-error/10 border border-error rounded-lg">
+                                    <p className="text-error text-body-sm">{error}</p>
+                                </div>
+                            )}
 
-                            {/* Full Name */}
+                            {/* User Name */}
                             <div className="flex flex-col gap-2">
                                 <label className="
                                     font-label-caps
                                     text-label-caps
                                     text-on-surface-variant
                                 ">
-                                    {t("Full Name")}
+                                    {t("User Name")}
                                 </label>
                                 <div className="relative">
                                     <i className="
@@ -288,12 +374,14 @@ const Auth = () => {
                                     "></i>
                                     <input
                                         type="text"
-                                        placeholder="Ahmed Hassan"
-                                        className="
+                                        name="userName"
+                                        placeholder="username"
+                                        {...registerFormik.getFieldProps("userName")}
+                                        className={`
                                             w-full
-                                            h-12 tab-md:h-13 lg:h-14 3xl:h-16
+                                            h-10 tab-md:h-11 lg:h-12 3xl:h-14
                                             bg-surface-container-low
-                                            border border-outline-variant
+                                            border ${registerFormik.touched.userName && registerFormik.errors.userName ? "border-error" : "border-outline-variant"}
                                             rounded-lg tab-md:rounded-lg lg:rounded-xl
                                             ltr:pl-12 rtl:pr-12
                                             tab-md:ltr:pl-14 tab-md:rtl:pr-14
@@ -302,11 +390,14 @@ const Auth = () => {
                                             text-body-md
                                             text-on-surface
                                             placeholder:text-on-surface-variant/50
-                                            focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-fixed-dim
+                                            focus:outline-none focus:ring-2 ${registerFormik.touched.userName && registerFormik.errors.userName ? "focus:ring-error" : "focus:ring-secondary-fixed-dim"}
                                             transition-all
-                                        "
+                                        `}
                                     />
                                 </div>
+                                {registerFormik.touched.userName && registerFormik.errors.userName && (
+                                    <p className="text-error text-body-sm">{registerFormik.errors.userName}</p>
+                                )}
                             </div>
 
                             {/* Email */}
@@ -329,12 +420,14 @@ const Auth = () => {
                                     "></i>
                                     <input
                                         type="email"
+                                        name="email"
                                         placeholder="ahmed@example.com"
-                                        className="
+                                        {...registerFormik.getFieldProps("email")}
+                                        className={`
                                             w-full
-                                            h-12 tab-md:h-13 lg:h-14 3xl:h-16
+                                            h-10 tab-md:h-11 lg:h-12 3xl:h-14
                                             bg-surface-container-low
-                                            border border-outline-variant
+                                            border ${registerFormik.touched.email && registerFormik.errors.email ? "border-error" : "border-outline-variant"}
                                             rounded-lg tab-md:rounded-lg lg:rounded-xl
                                             ltr:pl-12 rtl:pr-12
                                             tab-md:ltr:pl-14 tab-md:rtl:pr-14
@@ -343,11 +436,14 @@ const Auth = () => {
                                             text-body-md
                                             text-on-surface
                                             placeholder:text-on-surface-variant/50
-                                            focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-fixed-dim
+                                            focus:outline-none focus:ring-2 ${registerFormik.touched.email && registerFormik.errors.email ? "focus:ring-error" : "focus:ring-secondary-fixed-dim"}
                                             transition-all
-                                        "
+                                        `}
                                     />
                                 </div>
+                                {registerFormik.touched.email && registerFormik.errors.email && (
+                                    <p className="text-error text-body-sm">{registerFormik.errors.email}</p>
+                                )}
                             </div>
 
                             {/* Password */}
@@ -370,12 +466,14 @@ const Auth = () => {
                                     "></i>
                                     <input
                                         type={showRegPassword ? "text" : "password"}
+                                        name="password"
                                         placeholder="••••••••"
-                                        className="
+                                        {...registerFormik.getFieldProps("password")}
+                                        className={`
                                             w-full
-                                            h-12 tab-md:h-13 lg:h-14 3xl:h-16
+                                            h-10 tab-md:h-11 lg:h-12 3xl:h-14
                                             bg-surface-container-low
-                                            border border-outline-variant
+                                            border ${registerFormik.touched.password && registerFormik.errors.password ? "border-error" : "border-outline-variant"}
                                             rounded-lg tab-md:rounded-lg lg:rounded-xl
                                             ltr:pl-12 rtl:pr-12
                                             tab-md:ltr:pl-14 tab-md:rtl:pr-14
@@ -385,9 +483,9 @@ const Auth = () => {
                                             text-body-md
                                             text-on-surface
                                             placeholder:text-on-surface-variant/50
-                                            focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary-fixed-dim
+                                            focus:outline-none focus:ring-2 ${registerFormik.touched.password && registerFormik.errors.password ? "focus:ring-error" : "focus:ring-secondary-fixed-dim"}
                                             transition-all
-                                        "
+                                        `}
                                     />
                                     <i
                                         className={`
@@ -401,9 +499,57 @@ const Auth = () => {
                                         onClick={() => setShowRegPassword(!showRegPassword)}
                                     ></i>
                                 </div>
+                                {registerFormik.touched.password && registerFormik.errors.password && (
+                                    <p className="text-error text-body-sm">{registerFormik.errors.password}</p>
+                                )}
                             </div>
 
-                            {/* Terms */}
+                            {/* Confirm Password */}
+                            <div className="flex flex-col gap-2">
+                                <label className="
+                                    font-label-caps
+                                    text-label-caps
+                                    text-on-surface-variant
+                                ">
+                                    {t("Confirm Password")}
+                                </label>
+                                <div className="relative">
+                                    <i className="
+                                        ri-lock-line
+                                        absolute top-1/2 -translate-y-1/2
+                                        ltr:left-4 rtl:right-4
+                                        text-on-surface-variant
+                                        text-base tab-md:text-lg
+                                        pointer-events-none
+                                    "></i>
+                                    <input
+                                        type={showRegPassword ? "text" : "password"}
+                                        name="confirmPassword"
+                                        placeholder="••••••••"
+                                        {...registerFormik.getFieldProps("confirmPassword")}
+                                        className={`
+                                            w-full
+                                            h-10 tab-md:h-11 lg:h-12 3xl:h-14
+                                            bg-surface-container-low
+                                            border ${registerFormik.touched.confirmPassword && registerFormik.errors.confirmPassword ? "border-error" : "border-outline-variant"}
+                                            rounded-lg tab-md:rounded-lg lg:rounded-xl
+                                            ltr:pl-12 rtl:pr-12
+                                            tab-md:ltr:pl-14 tab-md:rtl:pr-14
+                                            ltr:pr-12 rtl:pl-12
+                                            tab-md:ltr:pr-14 tab-md:rtl:pl-14
+                                            font-body-md
+                                            text-body-md
+                                            text-on-surface
+                                            placeholder:text-on-surface-variant/50
+                                            focus:outline-none focus:ring-2 ${registerFormik.touched.confirmPassword && registerFormik.errors.confirmPassword ? "focus:ring-error" : "focus:ring-secondary-fixed-dim"}
+                                            transition-all
+                                        `}
+                                    />
+                                </div>
+                                {registerFormik.touched.confirmPassword && registerFormik.errors.confirmPassword && (
+                                    <p className="text-error text-body-sm">{registerFormik.errors.confirmPassword}</p>
+                                )}
+                            </div>
                             <div className="flex items-start gap-3">
                                 <input
                                     type="checkbox"
@@ -432,27 +578,30 @@ const Auth = () => {
                             </div>
 
                             {/* Register Button */}
-                            <button className="
-                                w-full
-                                h-12 tab-md:h-13 lg:h-14 3xl:h-16
-                                bg-on-surface hover:opacity-85 active:opacity-70
-                                text-surface
-                                font-Cairo font-bold
-                                text-label-caps 3xl:text-body-sm
-                                tracking-widest uppercase
-                                rounded-lg tab-md:rounded-lg lg:rounded-xl
-                                transition-all duration-150
-                                mt-2 tab-md:mt-3
-                            ">
-                                {t("Create Account")}
+                            <button 
+                                type="submit" 
+                                disabled={isLoading || registerFormik.isSubmitting}
+                                className="
+                                    w-full
+                                    h-10 tab-md:h-11 lg:h-12 3xl:h-14
+                                    bg-on-surface hover:opacity-85 active:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed
+                                    text-surface
+                                    font-Cairo font-bold
+                                    text-label-caps 3xl:text-body-sm
+                                    tracking-widest uppercase
+                                    rounded-lg tab-md:rounded-lg lg:rounded-xl
+                                    transition-all duration-150
+                                    mt-2 tab-md:mt-2
+                                ">
+                                {isLoading || registerFormik.isSubmitting ? t("Loading...") : t("Create Account")}
                             </button>
-                        </div>
+                        </form>
                     )}
 
 
                     {/* Support Link */}
                     <p className="
-                        mt-8 tab-md:mt-10 3xl:mt-12
+                        mt-4 tab-md:mt-5 3xl:mt-6
                         font-body-sm
                         text-body-sm
                         text-on-surface-variant text-center
