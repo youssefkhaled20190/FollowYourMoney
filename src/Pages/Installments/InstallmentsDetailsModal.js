@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { createGetRequest } from "../../Hooks/Services/Requests";
+import React from "react";
 
 /* ─── helpers ──────────────────────────────────────────── */
 const fmt = (n) =>
@@ -12,35 +11,34 @@ const fmtDate = (s) =>
     year: "numeric",
   });
 
-const InstallmentDetailsModal = ({ gameyaId, onClose, onEdit }) => {
-  const [gameya, setGameya] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const InstallmentDetailsModal = ({ installment, onClose, onEdit }) => {
+  if (!installment) return null;
 
-  useEffect(() => {
-    if (!gameyaId) return;
+  const {
+    name,
+    monthlyAmount,
+    totalMonths,
+    paidMonths,
+    startDate,
+    isActive,
+    remainingMonths,
+    isCompleted,
+  } = installment;
 
-    const fetchGameya = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await createGetRequest(`/Gameya/${gameyaId}`);
-        // single .data hop — createGetRequest already returns response.data
-        setGameya(res.data);
-      } catch (err) {
-        setError("Failed to load gameya details.");
-      } finally {
-        setLoading(false);
-      }
+  const totalVal = monthlyAmount * totalMonths;
+
+  // Generate simulated payment schedule
+  const baseDate = new Date(startDate);
+  const payments = Array.from({ length: totalMonths || 0 }, (_, i) => {
+    const monthNum = i + 1;
+    const dueDate = new Date(baseDate);
+    dueDate.setMonth(baseDate.getMonth() + i);
+    return {
+      monthNumber: monthNum,
+      dueDate: dueDate.toISOString(),
+      isPaid: monthNum <= paidMonths,
     };
-
-    fetchGameya();
-  }, [gameyaId]);
-
-  if (!gameyaId) return null;
-
-  const totalMonths = gameya?.totalMembers || 0;
-  const totalPot = (gameya?.monthlyContribution || 0) * totalMonths;
+  });
 
   return (
     <div
@@ -56,11 +54,11 @@ const InstallmentDetailsModal = ({ gameyaId, onClose, onEdit }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <i className="ri-team-line text-on-primary text-lg"></i>
+                <i className="ri-bank-card-line text-on-primary text-lg"></i>
               </div>
               <div>
                 <h3 className="font-headline-md text-headline-md text-on-surface">
-                  Gameya Details
+                  Installment Details
                 </h3>
               </div>
             </div>
@@ -75,187 +73,159 @@ const InstallmentDetailsModal = ({ gameyaId, onClose, onEdit }) => {
 
         {/* ─── Content ─────────────────────────────────────── */}
         <div className="flex-1 overflow-y-auto px-6 py-5">
-          {loading && (
-            <div className="flex items-center justify-center py-16">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 rounded-full border-2 border-secondary border-t-transparent animate-spin"></div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Loading details…
+          <div className="flex flex-col gap-6">
+            {/* ─── Installment Name & Meta ────────────────────── */}
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 rounded-xl bg-primary-fixed flex items-center justify-center flex-shrink-0">
+                <i className="ri-bank-card-line text-primary text-3xl"></i>
+              </div>
+              <div>
+                <h4 className="font-headline-md text-headline-md text-on-surface">
+                  {name}
+                </h4>
+                <p className="font-body-sm text-body-sm text-outline mt-0.5">
+                  {isCompleted ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-container-high text-outline rounded-full text-[10px] font-bold">
+                      COMPLETED
+                    </span>
+                  ) : isActive ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-secondary/10 text-secondary rounded-full text-[10px] font-bold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                      ACTIVE
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-container-high text-outline rounded-full text-[10px] font-bold">
+                      INACTIVE
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
-          )}
 
-          {error && (
-            <div className="bg-error-container/30 border border-error/20 rounded-xl p-4 flex items-center gap-3">
-              <i className="ri-error-warning-line text-error text-xl"></i>
-              <p className="font-body-md text-body-md text-error">{error}</p>
+            {/* ─── Stats Grid ────────────────────────────── */}
+            <div className="grid grid-cols-2 tab-sm:grid-cols-4 gap-3">
+              <div className="p-3.5 bg-surface-container-low rounded-xl">
+                <p className="font-label-caps text-[10px] tracking-wider text-outline mb-0.5">
+                  MONTHLY AMOUNT
+                </p>
+                <p className="font-currency-display text-[18px] leading-6 text-primary">
+                  {fmt(monthlyAmount)}
+                </p>
+              </div>
+              <div className="p-3.5 bg-surface-container-low rounded-xl">
+                <p className="font-label-caps text-[10px] tracking-wider text-outline mb-0.5">
+                  PAID MONTHS
+                </p>
+                <p className="font-currency-display text-[18px] leading-6 text-secondary">
+                  {paidMonths} / {totalMonths}
+                </p>
+              </div>
+              <div className="p-3.5 bg-surface-container-low rounded-xl">
+                <p className="font-label-caps text-[10px] tracking-wider text-outline mb-0.5">
+                  MONTHS LEFT
+                </p>
+                <p className="font-currency-display text-[18px] leading-6 text-tertiary">
+                  {remainingMonths}
+                </p>
+              </div>
+              <div className="p-3.5 bg-surface-container-low rounded-xl">
+                <p className="font-label-caps text-[10px] tracking-wider text-outline mb-0.5">
+                  TOTAL VALUE
+                </p>
+                <p className="font-currency-display text-[18px] leading-6 text-primary">
+                  {fmt(totalVal)}
+                </p>
+              </div>
             </div>
-          )}
 
-          {!loading && !error && gameya && (
-            <div className="flex flex-col gap-6">
-              {/* ─── Gameya Name & Meta ────────────────────── */}
-              <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-xl bg-primary-fixed flex items-center justify-center flex-shrink-0">
-                  <i className="ri-group-2-line text-primary text-3xl"></i>
-                </div>
-                <div>
-                  <h4 className="font-headline-md text-headline-md text-on-surface">
-                    {gameya.name}
-                  </h4>
-                  <p className="font-body-sm text-body-sm text-outline mt-0.5">
-                    {gameya.createdBy && `Created by ${gameya.createdBy}`}
-                    {gameya.isActive ? (
-                      <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 bg-secondary/10 text-secondary rounded-full text-[10px] font-bold">
-                        <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
-                        ACTIVE
-                      </span>
-                    ) : (
-                      <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 bg-surface-container-high text-outline rounded-full text-[10px] font-bold">
-                        ENDED
-                      </span>
-                    )}
-                  </p>
-                </div>
+            {/* ─── Payment Schedule ──────────────────────── */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <p className="font-label-caps text-label-caps text-on-surface-variant">
+                  PAYMENT SCHEDULE
+                </p>
+                <p className="font-body-sm text-[12px] text-outline">
+                  {totalMonths} months duration
+                </p>
               </div>
 
-              {/* ─── Stats Grid ────────────────────────────── */}
-              <div className="grid grid-cols-2 tab-sm:grid-cols-4 gap-3">
-                <div className="p-3.5 bg-surface-container-low rounded-xl">
-                  <p className="font-label-caps text-[10px] tracking-wider text-outline mb-0.5">
-                    MONTHLY PAY
-                  </p>
-                  <p className="font-currency-display text-[18px] leading-6 text-primary">
-                    {fmt(gameya.monthlyContribution)}
-                  </p>
-                </div>
-                <div className="p-3.5 bg-surface-container-low rounded-xl">
-                  <p className="font-label-caps text-[10px] tracking-wider text-outline mb-0.5">
-                    MEMBERS
-                  </p>
-                  <p className="font-currency-display text-[18px] leading-6 text-secondary">
-                    {gameya.totalMembers}
-                  </p>
-                </div>
-                <div className="p-3.5 bg-surface-container-low rounded-xl">
-                  <p className="font-label-caps text-[10px] tracking-wider text-outline mb-0.5">
-                    MY TURN
-                  </p>
-                  <p className="font-currency-display text-[18px] leading-6 text-tertiary">
-                    Month {gameya.myTurn}
-                  </p>
-                </div>
-                <div className="p-3.5 bg-surface-container-low rounded-xl">
-                  <p className="font-label-caps text-[10px] tracking-wider text-outline mb-0.5">
-                    TOTAL POT
-                  </p>
-                  <p className="font-currency-display text-[18px] leading-6 text-primary">
-                    {fmt(totalPot)}
-                  </p>
-                </div>
-              </div>
-
-              {/* ─── Payment Schedule ──────────────────────── */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="font-label-caps text-label-caps text-on-surface-variant">
-                    PAYMENT SCHEDULE
-                  </p>
-                  <p className="font-body-sm text-[12px] text-outline">
-                    {gameya.payments?.length || 0} months
-                  </p>
+              <div className="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/15">
+                {/* Table Header */}
+                <div className="grid grid-cols-[0.5fr_1fr_1.2fr_1fr] px-4 py-2.5 bg-surface-container border-b border-outline-variant/15">
+                  <span className="font-label-caps text-[10px] tracking-wider text-outline">
+                    MONTH
+                  </span>
+                  <span className="font-label-caps text-[10px] tracking-wider text-outline">
+                    STATUS
+                  </span>
+                  <span className="font-label-caps text-[10px] tracking-wider text-outline">
+                    DUE DATE
+                  </span>
+                  <span className="font-label-caps text-[10px] tracking-wider text-outline text-right">
+                    AMOUNT
+                  </span>
                 </div>
 
-                <div className="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/15">
-                  {/* Table Header */}
-                  <div className="grid grid-cols-[0.5fr_1fr_1fr_1fr] px-4 py-2.5 bg-surface-container border-b border-outline-variant/15">
-                    <span className="font-label-caps text-[10px] tracking-wider text-outline">
-                      #
-                    </span>
-                    <span className="font-label-caps text-[10px] tracking-wider text-outline">
-                      TYPE
-                    </span>
-                    <span className="font-label-caps text-[10px] tracking-wider text-outline">
-                      DATE
-                    </span>
-                    <span className="font-label-caps text-[10px] tracking-wider text-outline text-right">
-                      AMOUNT
-                    </span>
-                  </div>
-
-                  {/* Table Rows */}
-                  <div className="divide-y divide-outline-variant/10 max-h-[300px] overflow-y-auto">
-                    {gameya.payments
-                      ?.sort((a, b) => a.monthNumber - b.monthNumber)
-                      .map((p) => {
-                        const isReceived = p.type === "Received";
-                        return (
-                          <div
-                            key={p.paymentId}
-                            className={`grid grid-cols-[0.5fr_1fr_1fr_1fr] px-4 py-3 items-center transition-colors hover:bg-surface-container/50 ${
-                              isReceived ? "bg-tertiary-fixed/10" : ""
+                {/* Table Rows */}
+                <div className="divide-y divide-outline-variant/10 max-h-[300px] overflow-y-auto">
+                  {payments.map((p) => {
+                    return (
+                      <div
+                        key={p.monthNumber}
+                        className={`grid grid-cols-[0.5fr_1fr_1.2fr_1fr] px-4 py-3 items-center transition-colors hover:bg-surface-container/50 ${
+                          p.isPaid ? "bg-secondary-fixed/5" : ""
+                        }`}
+                      >
+                        <span className="font-currency-table text-[13px] text-on-surface font-semibold">
+                          #{p.monthNumber}
+                        </span>
+                        <span>
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider ${
+                              p.isPaid
+                                ? "bg-secondary/15 text-secondary"
+                                : "bg-outline/10 text-outline"
                             }`}
                           >
-                            <span className="font-currency-table text-[13px] text-on-surface">
-                              {p.monthNumber}
-                            </span>
-                            <span>
-                              <span
-                                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider ${
-                                  isReceived
-                                    ? "bg-tertiary-fixed text-on-tertiary-fixed-variant"
-                                    : "bg-primary-fixed text-on-primary-fixed-variant"
-                                }`}
-                              >
-                                <span
-                                  className={`w-1.5 h-1.5 rounded-full ${
-                                    isReceived ? "bg-tertiary" : "bg-primary"
-                                  }`}
-                                ></span>
-                                {isReceived ? "RECEIVED" : "PAID"}
-                              </span>
-                            </span>
-                            <span className="font-body-sm text-[13px] text-outline">
-                              {fmtDate(p.paidOn)}
-                            </span>
                             <span
-                              className={`font-currency-table text-[13px] text-right ${
-                                isReceived ? "text-tertiary font-bold" : "text-on-surface"
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                p.isPaid ? "bg-secondary animate-pulse" : "bg-outline"
                               }`}
-                            >
-                              {isReceived
-                                ? `+${fmt(totalPot)}`
-                                : `-${fmt(gameya.monthlyContribution)}`}
-                            </span>
-                          </div>
-                        );
-                      })}
-                  </div>
+                            ></span>
+                            {p.isPaid ? "PAID" : "PENDING"}
+                          </span>
+                        </span>
+                        <span className="font-body-sm text-[13px] text-outline">
+                          {fmtDate(p.dueDate)}
+                        </span>
+                        <span className="font-currency-table text-[13px] text-right text-on-surface font-bold">
+                          -{fmt(monthlyAmount)} EGP
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* ─── Footer Actions ────────────────────────────── */}
-        {!loading && !error && gameya && (
-          <div className="px-6 py-4 border-t border-outline-variant/20 bg-surface-container-low/30 flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-xl font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors"
-            >
-              CLOSE
-            </button>
-            <button
-              onClick={() => onEdit(gameya)}
-              className="px-5 py-2.5 bg-secondary text-on-secondary rounded-xl font-label-caps text-label-caps hover:shadow-lg hover:shadow-secondary/15 transition-all duration-200 active:scale-[0.97] flex items-center gap-2"
-            >
-              <i className="ri-edit-line text-sm"></i>
-              EDIT
-            </button>
-          </div>
-        )}
+        <div className="px-6 py-4 border-t border-outline-variant/20 bg-surface-container-low/30 flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-5 py-2.5 rounded-xl font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors"
+          >
+            CLOSE
+          </button>
+          <button
+            onClick={() => onEdit(installment)}
+            className="px-5 py-2.5 bg-secondary text-on-secondary rounded-xl font-label-caps text-label-caps hover:shadow-lg hover:shadow-secondary/15 transition-all duration-200 active:scale-[0.97] flex items-center gap-2"
+          >
+            <i className="ri-edit-line text-sm"></i>
+            EDIT
+          </button>
+        </div>
       </div>
     </div>
   );

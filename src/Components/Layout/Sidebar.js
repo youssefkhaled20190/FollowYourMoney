@@ -71,7 +71,7 @@ const Sidebar = ({ isSidebarOpen, closeSidebar, isDesktop, isCollapsed, toggleCo
             id: 1,
             title: t("Dashboard"),
             icon: "ri-dashboard-line",
-            path: "/dashboard",
+            path: "/Dashboard/DashboardPage",
         },
         {
             id: 2,
@@ -81,39 +81,27 @@ const Sidebar = ({ isSidebarOpen, closeSidebar, isDesktop, isCollapsed, toggleCo
         },
         {
             id: 3,
-            title: t("Re-Plan"),
-            icon: "ri-arrow-left-right-fill",
-            path: "/Replan/page",
-        },
-        {
-            id: 4,
             title: t("Gameyas"),
             icon: "ri-donut-chart-line",
             path: "/Gameyas/GameyaList",
         },
         {
-            id: 5,
+            id: 4,
             title: t("Installments"),
             icon: "ri-cash-line",
-            path: "/installments/InstallmentsList",
+            path: "/Installments/InstallmentsList",
+        },
+        {
+            id: 5,
+            title: t("WishList"),
+            icon: "ri-poker-hearts-line",
+            path: "/wishlists/wishlistlist",
         },
         {
             id: 6,
-            title: t("WishList"),
-            icon: "ri-poker-hearts-line",
-            path: "/wishlist/page",
-        },
-        {
-            id: 7,
-            title: t("Expenses"),
-            icon: "ri-receipt-line",
-            path: "/expenses/page",
-        },
-        {
-            id: 8,
             title: t("History"),
             icon: "ri-history-line",
-            path: "/history/page",
+            path: "/History/HistoryList",
         }
     ];
 

@@ -1,4 +1,4 @@
-import CustomSwal from "../../Components/SwalAlert"
+import CustomSwal from "../../Components/UI/CustomSwal";
 import React, { useState } from "react";
 
 export const useSwal = () => {
@@ -11,7 +11,9 @@ export const useSwal = () => {
     showCancelButton: false,
     cancelText: 'Cancel',
     onConfirm: null,
-    onCancel: null
+    onCancel: null,
+    showInput: false,
+    inputPlaceholder: '',
   });
 
   const showSwal = (options) => {
@@ -24,7 +26,9 @@ export const useSwal = () => {
       showCancelButton: options.showCancelButton || false,
       cancelText: options.cancelText || 'Cancel',
       onConfirm: options.onConfirm || null,
-      onCancel: options.onCancel || null
+      onCancel: options.onCancel || null,
+      showInput: options.showInput || false,
+      inputPlaceholder: options.inputPlaceholder || '',
     });
   };
 
@@ -50,7 +54,7 @@ export const useSwal = () => {
     });
   };
 
-  const showDeleteConfirmation = (title = 'Are you sure?', message = 'This action cannot be undone!', onConfirm, onCancel) => {
+  const showDeleteConfirmation = (title = 'Are you sure?', message = 'This action cannot be undone!', onConfirm, onCancel, options = {}) => {
     showSwal({
       type: 'error',
       title,
@@ -59,7 +63,21 @@ export const useSwal = () => {
       showCancelButton: true,
       cancelText: 'Cancel',
       onConfirm,
-      onCancel
+      onCancel,
+      ...options
+    });
+  };
+
+  const showConfirmation = (title, message, onConfirm, onCancel) => {
+    showSwal({
+      type: 'warning', // or 'info'
+      title,
+      message,
+      confirmText: 'Yes, Continue',
+      showCancelButton: true,
+      cancelText: 'Cancel',
+      onConfirm,
+      onCancel,
     });
   };
 
@@ -70,6 +88,7 @@ export const useSwal = () => {
     showSuccess,
     showError,
     showDeleteConfirmation,
+    showConfirmation,
     SwalComponent: () => (
       <CustomSwal
         {...swalState}

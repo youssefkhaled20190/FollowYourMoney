@@ -8,22 +8,21 @@ import {
 
 const validationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
-  monthlyAmount: Yup.number()
+  targetAmount: Yup.number()
     .typeError("Must be a number")
     .positive("Must be positive")
     .required("Required"),
-  totalMonths: Yup.number()
+  savedAmount: Yup.number()
     .typeError("Must be a number")
-    .integer()
-    .min(1, "At least 1 month")
-    .required("Required"),
-  paidMonths: Yup.number()
-    .typeError("Must be a number")
-    .integer()
     .min(0, "Cannot be negative")
-    .max(Yup.ref("totalMonths"), "Cannot exceed total months")
     .required("Required"),
-  startDate: Yup.date().required("Required"),
+  priority: Yup.number()
+    .typeError("Must be a number")
+    .integer()
+    .min(1, "Priority must be at least 1")
+    .required("Required"),
+  dueDate: Yup.date().nullable(),
+  isCritical: Yup.boolean(),
 });
 
 /* ─── Reusable Input Field ─────────────────────────────── */
@@ -56,36 +55,38 @@ const FormField = ({ label, name, formik, type = "text", isMonospace = false, pl
   </div>
 );
 
-const InstallmentFormModal = ({ initialData, onClose, onSuccess }) => {
-  const isEdit = Boolean(initialData?.installmentId);
+const WishlistFormModal = ({ initialData, onClose, onSuccess }) => {
+  const isEdit = Boolean(initialData?.itemId);
 
   const formik = useFormik({
     initialValues: {
-      userId: initialData?.userId || "",
       name: initialData?.name || "",
-      monthlyAmount: initialData?.monthlyAmount || "",
-      totalMonths: initialData?.totalMonths || "",
-      paidMonths: initialData?.paidMonths ?? 0,
-      startDate: initialData?.startDate?.slice(0, 10) || "",
+      targetAmount: initialData?.targetAmount || "",
+      savedAmount: initialData?.savedAmount ?? 0,
+      priority: initialData?.priority || 1,
+      dueDate: initialData?.dueDate ? initialData.dueDate.slice(0, 10) : "",
+      isCritical: initialData?.isCritical || false,
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting, setStatus }) => {
       try {
         const payload = {
           name: values.name,
-          monthlyAmount: Number(values.monthlyAmount),
-          totalMonths: Number(values.totalMonths),
-          paidMonths: Number(values.paidMonths),
-          startDate: values.startDate,
+          targetAmount: Number(values.targetAmount),
+          savedAmount: Number(values.savedAmount || 0),
+          priority: Number(values.priority),
+          dueDate: values.dueDate || null,
+          isCritical: Boolean(values.isCritical),
+          savePercentage: 0,
         };
 
         if (isEdit) {
-          await createUpdateRequest("/Installment/Update", {
-            installmentId: initialData.installmentId,
+          await createUpdateRequest("/Wishlist/Update", {
+            itemId: initialData.itemId,
             ...payload,
           });
         } else {
-          await createPostRequest("/Installment/Add", payload);
+          await createPostRequest("/Wishlist/Add", payload);
         }
 
         onSuccess();
@@ -117,7 +118,7 @@ const InstallmentFormModal = ({ initialData, onClose, onSuccess }) => {
                 <i className={`${isEdit ? "ri-edit-line" : "ri-add-line"} text-on-primary text-lg`}></i>
               </div>
               <h3 className="font-headline-md text-headline-md text-on-surface">
-                {isEdit ? "Edit Installment" : "Add Installment"}
+                {isEdit ? "Edit Wishlist Item" : "Add Wishlist Item"}
               </h3>
             </div>
             <button
@@ -135,55 +136,70 @@ const InstallmentFormModal = ({ initialData, onClose, onSuccess }) => {
           className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4"
         >
           <FormField
-            label="INSTALLMENT NAME"
+            label="GOAL / ITEM NAME"
             name="name"
             formik={formik}
-            placeholder="e.g. Car Loan, Phone Installment"
+            placeholder="e.g. New Laptop, Travel to Tokyo"
           />
 
           <div className="grid grid-cols-2 gap-3">
             <FormField
-              label="MONTHLY AMOUNT (EGP)"
-              name="monthlyAmount"
+              label="TARGET AMOUNT (EGP)"
+              name="targetAmount"
               formik={formik}
               isMonospace
-              placeholder="3,500"
+              placeholder="10,000"
             />
             <FormField
-              label="START DATE"
-              name="startDate"
+              label="ALREADY SAVED (EGP)"
+              name="savedAmount"
+              formik={formik}
+              isMonospace
+              placeholder="1,500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              label="PRIORITY (1 = HIGH)"
+              name="priority"
+              formik={formik}
+              type="number"
+              placeholder="1"
+            />
+            <FormField
+              label="TARGET DATE (OPTIONAL)"
+              name="dueDate"
               formik={formik}
               type="date"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <FormField
-              label="TOTAL DURATION (MONTHS)"
-              name="totalMonths"
-              formik={formik}
-              placeholder="12"
+          <div className="flex items-center gap-2 py-2">
+            <input
+              type="checkbox"
+              id="isCritical"
+              name="isCritical"
+              checked={formik.values.isCritical}
+              onChange={formik.handleChange}
+              className="w-5 h-5 rounded border-outline-variant/50 text-secondary focus:ring-secondary cursor-pointer"
             />
-            <FormField
-              label="ALREADY PAID MONTHS"
-              name="paidMonths"
-              formik={formik}
-              placeholder="3"
-            />
+            <label htmlFor="isCritical" className="font-body-md text-body-md text-on-surface cursor-pointer select-none">
+              Mark as Critical Goal
+            </label>
           </div>
 
           {/* ─── Computed Preview ───────────────────────────── */}
-          {formik.values.monthlyAmount && formik.values.totalMonths && (
+          {formik.values.targetAmount && (
             <div className="bg-primary-fixed/30 rounded-xl p-3.5 flex items-center gap-3 border border-primary-fixed">
               <i className="ri-money-dollar-circle-line text-primary text-xl"></i>
               <div>
                 <p className="text-[10px] font-label-caps tracking-wider text-on-primary-fixed-variant">
-                  TOTAL VALUE
+                  REMAINING TO SAVE
                 </p>
                 <p className="font-currency-display text-[18px] text-primary leading-6">
                   {Number(
-                    formik.values.monthlyAmount *
-                      formik.values.totalMonths
+                    Math.max(0, formik.values.targetAmount - (formik.values.savedAmount || 0))
                   ).toLocaleString("en-EG")}{" "}
                   <span className="text-[12px] font-body-sm text-outline">EGP</span>
                 </p>
@@ -224,7 +240,7 @@ const InstallmentFormModal = ({ initialData, onClose, onSuccess }) => {
             ) : (
               <>
                 <i className={`${isEdit ? "ri-check-line" : "ri-add-line"} text-sm`}></i>
-                {isEdit ? "UPDATE" : "ADD INSTALLMENT"}
+                {isEdit ? "UPDATE" : "ADD WISHLIST ITEM"}
               </>
             )}
           </button>
@@ -234,4 +250,4 @@ const InstallmentFormModal = ({ initialData, onClose, onSuccess }) => {
   );
 };
 
-export default InstallmentFormModal;
+export default WishlistFormModal;

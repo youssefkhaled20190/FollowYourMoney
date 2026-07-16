@@ -41,7 +41,7 @@ const GameyaList = () => {
     .reduce((sum, g) => sum + (g.monthlyContribution || 0), 0);
 
   return (
-    <div className="max-w-container_max_width mx-auto p-margin_mobile tab-sm:p-gutter">
+    <div className="max-w-[1750px] mx-auto p-margin_mobile tab-sm:p-gutter w-full flex flex-col gap-8">
       {/* ─── Page Header ─────────────────────────────────── */}
       <div className="flex flex-col tab-sm:flex-row tab-sm:items-end justify-between mb-8 gap-4">
         <div>

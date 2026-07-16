@@ -63,7 +63,7 @@ const Auth = () => {
     });
 
     const registerFormik = useFormik({
-        initialValues: { userName: "", email: "", password: "", confirmPassword: "" , role: "Admin"},
+        initialValues: { userName: "", email: "", password: "", confirmPassword: "", role: "Admin" },
         validationSchema: registerValidation,
         onSubmit: async (values, { setSubmitting }) => {
             setError("");
@@ -88,6 +88,7 @@ const Auth = () => {
 
     return (
         <div className="
+            relative
             w-screen
             h-screen
             bg-surface
@@ -95,6 +96,51 @@ const Auth = () => {
             px-4 tab-md:px-6 lg:px-8 3xl:px-12
             overflow-hidden
         ">
+
+            {/* Background Decorative Icons */}
+            <div className="absolute inset-0 pointer-events-none select-none overflow-hidden z-0 opacity-5">
+                {/* 1. Wallet - Top Left */}
+                <i className="ri-wallet-3-line text-[60px] md:text-[100px] lg:text-[120px] absolute -top-4 -left-4 md:-top-10 md:-left-10 text-primary rotate-12"></i>
+
+                {/* 2. Coins - Top Right */}
+                <i className="ri-coins-line text-[70px] md:text-[120px] lg:text-[150px] absolute top-10 right-4 md:top-12 md:-right-12 text-primary -rotate-12"></i>
+
+                {/* 3. Bank - Bottom Left */}
+                <i className="ri-bank-line text-[80px] md:text-[140px] lg:text-[180px] absolute bottom-4 left-4 md:-bottom-12 md:-left-12 text-primary rotate-6"></i>
+
+                {/* 4. Dollar Circle - Bottom Right-ish */}
+                <i className="ri-money-dollar-circle-line text-[70px] md:text-[130px] lg:text-[160px] absolute bottom-10 right-4 md:bottom-1/3 md:right-1/4 text-primary rotate-45"></i>
+
+                {/* 5. Exchange - Top Center-Left */}
+                <i className="ri-exchange-dollar-line text-[60px] md:text-[110px] lg:text-[140px] absolute top-[15%] left-[30%] text-primary -rotate-12 hidden md:block"></i>
+
+                {/* 6. Pie Chart - Bottom Right */}
+                <i className="ri-pie-chart-line text-[50px] md:text-[90px] lg:text-[110px] absolute bottom-12 right-12 text-primary -rotate-6 hidden tab-md:block"></i>
+
+                {/* 7. Safe - Center Right */}
+                <i className="ri-safe-line text-[40px] md:text-[70px] lg:text-[90px] absolute top-1/3 right-12 text-primary rotate-12 hidden tab-md:block"></i>
+
+                {/* 8. Line Chart - Top Left-ish */}
+                <i className="ri-line-chart-line text-[50px] md:text-[80px] lg:text-[100px] absolute top-12 left-1/4 text-primary -rotate-12 hidden md:block"></i>
+
+                {/* 9. Copper Coin - Center Left */}
+                <i className="ri-copper-coin-line text-[60px] md:text-[100px] lg:text-[130px] absolute top-1/2 left-8 text-primary rotate-12 hidden tab-md:block"></i>
+
+                {/* 10. Refund - Bottom Center-Left */}
+                <i className="ri-refund-2-line text-[45px] md:text-[75px] lg:text-[95px] absolute bottom-1/4 left-1/4 text-primary rotate-6 hidden md:block"></i>
+
+                {/* 11. Calculator - Center Left-ish */}
+                <i className="ri-calculator-line text-[50px] md:text-[80px] lg:text-[100px] absolute bottom-1/3 left-10 text-primary -rotate-45 hidden tab-md:block"></i>
+
+                {/* 12. Percent - Top Center-Right */}
+                <i className="ri-percent-line text-[40px] md:text-[60px] lg:text-[80px] absolute top-4 right-1/3 text-primary rotate-12 hidden tab-lg:block"></i>
+
+                {/* 13. Ticket - Bottom Center */}
+                <i className="ri-ticket-2-line text-[45px] md:text-[70px] lg:text-[90px] absolute bottom-4 left-1/3 text-primary rotate-45 hidden tab-lg:block"></i>
+
+                {/* 14. Shopping Bag - Center Top-Right */}
+                <i className="ri-shopping-bag-3-line text-[50px] md:text-[80px] lg:text-[110px] absolute top-1/4 right-[40%] text-primary -rotate-12 hidden md:block"></i>
+            </div>
 
             {/* ── Page Header ── */}
             <div className="text-center mb-8 tab-md:mb-10">
@@ -285,8 +331,8 @@ const Auth = () => {
                             </div>
 
                             {/* Login Button */}
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 disabled={isLoading || loginFormik.isSubmitting}
                                 className="
                                     w-full
@@ -578,13 +624,13 @@ const Auth = () => {
                             </div>
 
                             {/* Register Button */}
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 disabled={isLoading || registerFormik.isSubmitting}
                                 className="
                                     w-full
                                     h-10 tab-md:h-11 lg:h-12 3xl:h-14
-                                    bg-on-surface hover:opacity-85 active:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed
+                                   bg-primary hover:opacity-85 active:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed
                                     text-surface
                                     font-Cairo font-bold
                                     text-label-caps 3xl:text-body-sm

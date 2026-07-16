@@ -12,6 +12,9 @@ const Layout = lazy(() => import("./Components/Layout/Layout"));
 const MonthlyPlan = lazy(() => import("./Pages/monthly-plan/page"));
 const Gameyas = lazy(() => import("./Pages/Gameyas/GameyaList"));
 const InstallmentList = lazy(() => import("./Pages/Installments/InstallmentsList"));
+const WishlistList = lazy(() => import("./Pages/Wishlists/WishlistList"));
+const HistoryList = lazy(() => import("./Pages/History/HistoryList"));
+const DashboardPage = lazy(() => import("./Pages/Dashboard/DashboardPage"));
 
 function App() {
   const lang = useSelector((state) => state.language.lang);
@@ -29,7 +32,7 @@ function App() {
   }, [dispatch]);
 
   if (authLoading) {
-    return <WalletLoader message="Loading..." />;
+    return <WalletLoader message="Loading" />;
   }
 
   return (
@@ -51,11 +54,13 @@ function App() {
                   <Suspense fallback={<WalletLoader message="Loading" />}>
                     <Routes>
                       {/* Default landing page redirect */}
-                      <Route path="/" element={<Navigate to="/monthly-plan/page" replace />} />
-                      <Route path="/dashboard" element={""} />
+                      <Route path="/" element={<Navigate to="/Dashboard/DashboardPage" replace />} />
+                      <Route path="/Dashboard/DashboardPage" element={<DashboardPage />} />
                       <Route path="/monthly-plan/page" element={<MonthlyPlan />} />
                       <Route path="/Gameyas/GameyaList" element={<Gameyas />} />
                       <Route path="/Installments/InstallmentsList" element={<InstallmentList />} />
+                      <Route path="/wishlists/wishlistlist" element={<WishlistList />} />
+                      <Route path="/History/HistoryList" element={<HistoryList />} />
                       <Route path="/users/add" element={""} />
                       <Route path="/settings" element={""} />
                       {/* Catch-all to redirect back to main page if path not found
