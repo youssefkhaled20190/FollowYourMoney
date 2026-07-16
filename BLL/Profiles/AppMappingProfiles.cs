@@ -26,7 +26,7 @@ namespace BLL.Profiles
             // ─── Gameya Mappings ────────────────────────────────────
             CreateMap<Gameya, GameyaDto>().ReverseMap();
 
-            CreateMap<Gameya, GameyaDetailDto>();
+            CreateMap<Gameya, GameyaDetailDto>().ReverseMap();
 
             CreateMap<GameyaPayment, GameyaPaymentDto>()
                 .ForMember(d => d.Type, o => o.MapFrom(s => s.Type.ToString()));
@@ -40,7 +40,9 @@ namespace BLL.Profiles
             // ─── MonthlySnapshot Mappings ───────────────────────────
             CreateMap<MonthlySnapshot, MonthlySnapshotDto>()
                 .ForMember(d => d.WeeklyBudgets, o => o.Ignore())   // filled manually by service
-                .ForMember(d => d.WishlistSummary, o => o.Ignore()); // filled manually by service
+                .ForMember(d => d.WishlistSummary, o => o.Ignore()) // filled manually by service
+                .ForMember(d => d.Gameyas, o => o.Ignore())
+                .ForMember(d => d.Installments, o => o.Ignore());
             CreateMap<MonthlySnapshotDto, MonthlySnapshot>()
                 .ForMember(d => d.WeeklyBudgets, o => o.Ignore())
                 .ForMember(d => d.Triggers, o => o.Ignore());
@@ -54,7 +56,9 @@ namespace BLL.Profiles
 
             // ─── WishlistItem Mappings ──────────────────────────────
             CreateMap<WishlistItem, WishlistItemDto>()
-                .ForMember(d => d.EtaMonths, o => o.Ignore());       // computed by service
+                .ForMember(d => d.EtaDays, o => o.Ignore())          // computed by service
+                .ForMember(d => d.EtaLabel, o => o.Ignore())         // computed by service
+                .ForMember(d => d.Remaining, o => o.Ignore());       // computed by service
             CreateMap<WishlistItemDto, WishlistItem>();
         }
     }

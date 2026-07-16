@@ -27,7 +27,7 @@ namespace Api
             builder.Services.AddControllers();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("tax_management_System")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Money_follow_system")));
 
             builder.Services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -121,6 +121,14 @@ namespace Api
 
                 options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        if (context.Request.Cookies.ContainsKey("jwt"))
+                        {
+                            context.Token = context.Request.Cookies["jwt"];
+                        }
+                        return Task.CompletedTask;
+                    },
                     OnTokenValidated = async context =>
                     {
                         var blacklist = context.HttpContext.RequestServices
@@ -141,9 +149,10 @@ namespace Api
             {
                 options.AddPolicy("AllowFrontend", policy =>
                     policy
-                        .AllowAnyOrigin() // for testing � restrict in production
+                        .WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:5173")
                         .AllowAnyMethod()
-                        .AllowAnyHeader());
+                        .AllowAnyHeader()
+                        .AllowCredentials());
             });
 
             var app = builder.Build();

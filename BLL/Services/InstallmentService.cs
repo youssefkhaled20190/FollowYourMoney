@@ -53,6 +53,18 @@ namespace BLL.Services
             entity.UserId = userId;
             entity.IsActive = true;
 
+            // Auto-calculate EndDate: last payment is at StartDate + (TotalMembers - 1) months
+            entity.EndDate = entity.StartDate.AddMonths(entity.TotalMonths - 1);
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            if (entity.EndDate < today)
+            {
+                entity.IsActive = false; // Mark as inactive if the end date is in the past
+            }
+            else
+            {
+                entity.IsActive = true; // Mark as active if the end date is in the future
+            }
             var created = await _installmentRepository.AddAsync(entity);
             return _mapper.Map<InstallmentDto>(created);
         }
@@ -71,7 +83,20 @@ namespace BLL.Services
             existing.StartDate = dto.StartDate;
             existing.TotalMonths = dto.TotalMonths;
             existing.PaidMonths = dto.PaidMonths;
-            
+
+            // Recalculate EndDate
+            existing.EndDate = existing.StartDate.AddMonths(existing.TotalMonths - 1);
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            if (existing.EndDate < today)
+            {
+                existing.IsActive = false; // Mark as inactive if the end date is in the past
+            }
+            else
+            {
+                existing.IsActive = true; // Mark as active if the end date is in the future
+            }
+
 
             return await _installmentRepository.UpdateAsync(existing);
         }

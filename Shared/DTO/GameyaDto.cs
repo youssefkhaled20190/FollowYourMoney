@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +14,7 @@ namespace Shared.DTO
         public decimal MonthlyContribution { get; set; }
         public int TotalMembers { get; set; }
         public int MyTurn { get; set; } 
+        public string CreatedBy { get; set; } = null!;
         public DateOnly StartDate { get; set; }
-        public bool IsActive { get; set; } = true;
     }
 }

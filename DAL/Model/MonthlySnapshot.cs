@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,13 +17,19 @@ namespace DAL.Model
         public decimal Salary { get; set; }
         public decimal Bonuses { get; set; }
         public decimal CarryOver { get; set; }
-        public decimal TotalIncome => Salary + Bonuses + CarryOver;
+
+        // هدف التوفير للشهر الجاي
+        public decimal CarryOverGoal { get; set; }
 
         // بعد الحسابات
         public decimal TotalCommitments { get; set; }
         public decimal FreeCash { get; set; }
+        public decimal TotalCashThisMonth { get; set; } // Gameya pot received this month (display only, not in FreeCash calc)
         public decimal AllocatedToWishlist { get; set; }
         public decimal WeeklyBudget { get; set; }
+
+        public decimal? WishlistPercentage { get; set; }
+        public decimal? CustomWeeklyBudget { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

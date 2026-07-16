@@ -15,6 +15,8 @@ namespace DAL.Model
         public int TotalMembers { get; set; }
         public int MyTurn { get; set; }       // optional — nullable لو مش عارف
         public DateOnly StartDate { get; set; }
+        public DateOnly EndDate { get; set; }
+        public string? CreatedBy { get; set; } = null!; // who created this Gameya
         public bool IsActive { get; set; } = true;
         // Navigation
         public ICollection<GameyaPayment> Payments { get; set; } = [];

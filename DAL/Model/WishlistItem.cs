@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,9 +15,10 @@ namespace DAL.Model
         public decimal TargetAmount { get; set; }
         public decimal SavedAmount { get; set; }
         public int Priority { get; set; }       // 1 = أهم حاجة
-        public bool IsAchieved { get; set; }
+        public bool IsAchieved { get; set; } = false;
+        public bool IsCritical { get; set; } = false;
 
-        // بيتحسب
-        public decimal Remaining => TargetAmount - SavedAmount;
+        public DateOnly? DueDate { get; set; }
+        public decimal SavePercentage { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿using DAL.Filter;
+using DAL.Filter;
 using DAL.Interfaces;
 using DAL.Model;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +25,7 @@ namespace DAL.Repositories
             {
                 IQueryable<Gameya> query = _entities
                     .Where(s => s.UserId == userId && s.IsActive)
+                    .Include(g => g.Payments.OrderBy(p => p.MonthNumber))
                     .AsNoTracking();
 
                 var totalCount = await query.CountAsync();
@@ -46,6 +47,36 @@ namespace DAL.Repositories
             {
                 throw new Exception(
                     $"Error fetching Gameya: {ex.Message}", ex);
+            }
+        }
+        public async Task<PagedResults<Gameya>> GetAllByUserAsync(string userId, RequestDto<WithOutFilter> body)
+        {
+            try
+            {
+                IQueryable<Gameya> query = _entities
+                    .Where(s => s.UserId == userId)
+                    .Include(g => g.Payments.OrderBy(p => p.MonthNumber))
+                    .AsNoTracking();
+
+                var totalCount = await query.CountAsync();
+
+                var pageItems = await query
+                    .Skip((body.PageNumber - 1) * body.PageSize)
+                    .Take(body.PageSize)
+                    .ToListAsync();
+
+                return new PagedResults<Gameya>()
+                {
+                    Items = pageItems,
+                    PageNumber = body.PageNumber,
+                    PageSize = body.PageSize,
+                    TotalCount = totalCount
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(
+                    $"Error fetching all Gameyas: {ex.Message}", ex);
             }
         }
         public async Task<Gameya?> GetWithPaymentsAsync(int gameyaId, string userId)

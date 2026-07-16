@@ -2,6 +2,7 @@ namespace Shared.DTO
 {
     /// <summary>
     /// Lightweight wishlist summary embedded inside a MonthlySnapshot response.
+    /// All computed fields are populated by the service layer.
     /// </summary>
     public class WishlistSummaryDto
     {
@@ -10,24 +11,24 @@ namespace Shared.DTO
         public int Priority { get; set; }
         public decimal TargetAmount { get; set; }
         public decimal SavedAmount { get; set; }
-        public decimal Remaining => TargetAmount - SavedAmount;
+        public bool IsCritical { get; set; }
 
-        /// <summary>Estimated months to achieve based on allocated monthly savings.</summary>
-        public decimal EtaMonths { get; set; }
+        public DateOnly? DueDate { get; set; }
+        public decimal SavePercentage { get; set; }
 
-        /// <summary>Human-readable ETA, e.g. "2 months", "1 year 3 months".</summary>
-        public string EtaLabel
-        {
-            get
-            {
-                if (EtaMonths <= 0) return "Achieved";
-                var months = (int)Math.Ceiling(EtaMonths);
-                var years = months / 12;
-                var rem = months % 12;
-                if (years == 0) return $"{rem} month{(rem != 1 ? "s" : "")}";
-                if (rem == 0) return $"{years} year{(years != 1 ? "s" : "")}";
-                return $"{years} year{(years != 1 ? "s" : "")} {rem} month{(rem != 1 ? "s" : "")}";
-            }
-        }
+        // Computed by service
+        public decimal Remaining { get; set; }
+
+        /// <summary>Estimated days to achieve based on allocated monthly savings. -1 = no savings allocated.</summary>
+        public int EtaDays { get; set; }
+
+        /// <summary>Human-readable ETA, e.g. "2 weeks", "1 month 3 weeks".</summary>
+        public string EtaLabel { get; set; } = string.Empty;
+
+        // Date-based goals properties
+        public decimal RequiredMonthlySaving { get; set; }
+        public decimal ActualMonthlySave { get; set; }
+        public decimal RequiredPercentage { get; set; }
+        public string StatusLabel { get; set; } = string.Empty;
     }
 }

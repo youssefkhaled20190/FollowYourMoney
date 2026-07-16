@@ -15,6 +15,8 @@ namespace Shared.DTO
         public int TotalMonths { get; set; }
         public int PaidMonths { get; set; }
         public DateOnly StartDate { get; set; }
+
+        public DateOnly EndDate { get; set; }
         public bool IsActive { get; set; } = true;
 
         // بيتحسب — مش بيتحفظ في الـ DB

@@ -15,8 +15,9 @@ namespace Shared.DTO
         public int TotalMembers { get; set; }
         public int MyTurn { get; set; }
         public DateOnly StartDate { get; set; }
+        public DateOnly EndDate { get; set; }
         public bool IsActive { get; set; } = true;
-
+        public string CreatedBy { get; set; } = null!;
         // Children
         public List<GameyaPaymentDto> Payments { get; set; } = [];
     }

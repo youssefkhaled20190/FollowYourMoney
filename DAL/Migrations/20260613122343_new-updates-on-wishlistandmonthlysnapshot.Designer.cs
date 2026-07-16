@@ -4,6 +4,7 @@ using DAL.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260613122343_new-updates-on-wishlistandmonthlysnapshot")]
+    partial class newupdatesonwishlistandmonthlysnapshot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,14 +78,6 @@ namespace DAL.Migrations
                         .HasColumnName("pkGameyaId");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GameyaId"));
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("fldCreatedBy");
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date")
-                        .HasColumnName("fldEndDate");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit")
@@ -162,10 +157,6 @@ namespace DAL.Migrations
                         .HasColumnName("pkInstallmentId");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InstallmentId"));
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date")
-                        .HasColumnName("fldEndDate");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit")
@@ -276,10 +267,6 @@ namespace DAL.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("fldCreatedAt");
 
-                    b.Property<decimal?>("CustomWeeklyBudget")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("fldCustomWeeklyBudget");
-
                     b.Property<decimal>("FreeCash")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("fldFreeCash");
@@ -291,10 +278,6 @@ namespace DAL.Migrations
                     b.Property<decimal>("Salary")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("fldSalary");
-
-                    b.Property<decimal>("TotalCashThisMonth")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("fldTotalCashThisMonth");
 
                     b.Property<decimal>("TotalCommitments")
                         .HasColumnType("decimal(18,2)")
@@ -308,10 +291,6 @@ namespace DAL.Migrations
                     b.Property<decimal>("WeeklyBudget")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("fldWeeklyBudget");
-
-                    b.Property<decimal?>("WishlistPercentage")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("fldWishlistPercentage");
 
                     b.Property<int>("Year")
                         .HasColumnType("int")
@@ -459,7 +438,7 @@ namespace DAL.Migrations
                         {
                             Id = "b7e10136-59d9-4908-8546-264213377dd9",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "86772632-e68b-4751-94da-342805b7b8d9",
+                            ConcurrencyStamp = "c4ca18c9-5f51-4e26-8fcf-67041c17bfa4",
                             Email = "admin@MoneyFollow.com",
                             EmailConfirmed = false,
                             FullName = "Admin",
@@ -470,7 +449,7 @@ namespace DAL.Migrations
                             NormalizedUserName = "ADMIN",
                             PasswordHash = "AQAAAAIAAYagAAAAEPFctG6LS8KiYEVdI0doV499jipmFK/3jNgFVjDcPHTor8FuU9BswnPGKzXHt2gLaA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "277e05e6-3b6a-4f56-a850-f57f4434fd56",
+                            SecurityStamp = "924a0263-cb18-435a-bb7e-d100e1945a67",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         });
@@ -521,17 +500,9 @@ namespace DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ItemId"));
 
-                    b.Property<DateOnly?>("DueDate")
-                        .HasColumnType("date")
-                        .HasColumnName("fldDueDate");
-
                     b.Property<bool>("IsAchieved")
                         .HasColumnType("bit")
                         .HasColumnName("fldIsAchieved");
-
-                    b.Property<bool>("IsCritical")
-                        .HasColumnType("bit")
-                        .HasColumnName("fldIsCritical");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -541,10 +512,6 @@ namespace DAL.Migrations
                     b.Property<int>("Priority")
                         .HasColumnType("int")
                         .HasColumnName("fldPriority");
-
-                    b.Property<decimal>("SavePercentage")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("fldSavePercentage");
 
                     b.Property<decimal>("SavedAmount")
                         .HasColumnType("decimal(18,2)")

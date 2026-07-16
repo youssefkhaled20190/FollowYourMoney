@@ -20,7 +20,7 @@ namespace API.Controllers
         [HttpGet("List")]
         public async Task<ActionResult> GetActiveList([FromQuery] RequestDto<WithOutFilter> body)
         {
-            var result = await _gameyaService.GetActiveByUserAsync(CurrentUserId, body);
+            var result = await _gameyaService.GetAllByUserAsync(CurrentUserId, body);
             return StatusCode(200, new GeneralResponseDto
             {
                 Result = true,
@@ -29,17 +29,17 @@ namespace API.Controllers
             });
         }
 
-        [HttpGet("ListWithPayments")]
-        public async Task<ActionResult> GetActiveListPayments(int GamayaId)
-        {
-            var result = await _gameyaService.GetWithPaymentsAsync(GamayaId, CurrentUserId);
-            return StatusCode(200, new GeneralResponseDto
-            {
-                Result = true,
-                Message = "Gameyas listed successfully",
-                Data = result
-            });
-        }
+        //[HttpGet("ListWithPayments")]
+        //public async Task<ActionResult> GetActiveListPayments([FromQuery] RequestDto<WithOutFilter> body)
+        //{
+        //    var result = await _gameyaService.GetAllByUserAsync(CurrentUserId, body);
+        //    return StatusCode(200, new GeneralResponseDto
+        //    {
+        //        Result = true,
+        //        Message = "Gameyas listed successfully",
+        //        Data = result
+        //    });
+        //}
 
         [HttpGet("{id}")]
         public async Task<ActionResult> GetWithPayments(int id)
@@ -85,20 +85,6 @@ namespace API.Controllers
             });
         }
 
-        [HttpPost("RecordPayment")]
-        public async Task<ActionResult> RecordPayment([FromBody] GameyaPaymentDto dto)
-        {
-            var payment = await _gameyaService.RecordPaymentAsync(dto, CurrentUserId);
-            if (payment == null)
-                return StatusCode(200, new GeneralResponseDto { Result = false, Message = "Could not record payment" });
-
-            return StatusCode(200, new GeneralResponseDto
-            {
-                Result = true,
-                Message = "Payment recorded successfully",
-                Data = payment
-            });
-        }
 
         [HttpPut("Update")]
         public async Task<ActionResult> Update([FromBody] GameyaDto dto )
@@ -113,8 +99,6 @@ namespace API.Controllers
                 Message = "Gameya updated successfully"
             });
         }
-
- 
 
         [HttpDelete("Delete/{id}")]
         public async Task<ActionResult> Delete(int id)

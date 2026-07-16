@@ -15,6 +15,7 @@ namespace Shared.DTO
         // Computed by service — not stored in DB
         public decimal SpentAmount { get; set; }
         public decimal RemainingBudget => BudgetAmount - SpentAmount;
+        public string? Note { get; set; }
 
         // How many days are left in this week (0 if past)
         public int DaysRemaining

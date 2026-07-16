@@ -17,5 +17,14 @@ namespace Shared.DTO
         /// If 0 the system uses all FreeCash for weekly spending.
         /// </summary>
         public decimal AllocatedToWishlist { get; set; }
+
+        /// <summary>
+        /// How much the user wants to save this month as carryover for next month.
+        /// Deducted from spendable cash alongside AllocatedToWishlist.
+        /// </summary>
+        public decimal CarryOverGoal { get; set; }
+
+        public decimal? CustomWeeklyBudget { get; set; }
+        public decimal? WishlistPercentage { get; set; }
     }
 }

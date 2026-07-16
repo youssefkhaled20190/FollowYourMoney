@@ -15,14 +15,41 @@ namespace DAL.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<MonthlySnapshot?> GetLatestSnapshotAsync(string userId)
+        public async Task<PagedResults<MonthlySnapshot>> GetLatestSnapshotAsync(string userId, RequestDto<MonthlySnapshotFilter> body)
         {
-            return await _entities
-                .Where(s => s.UserId == userId)
-                .OrderByDescending(s => s.CreatedAt)
-                .Include(s => s.WeeklyBudgets).ThenInclude(w => w.Expenses)
-                .Include(s => s.Triggers)
-                .FirstOrDefaultAsync();
+            try
+            {
+                IQueryable<MonthlySnapshot> query = _entities
+                    .Where(s => s.UserId == userId)
+                    .OrderByDescending(s => s.CreatedAt)
+                    .Include(s => s.WeeklyBudgets).ThenInclude(w=>w.Expenses)
+                    .Include(s => s.Triggers);
+
+                query = body.Filter?.GetWhereStatment(query) ?? query;
+
+                if (string.IsNullOrEmpty(body.OrderBy))
+                    body.OrderBy = "CreatedAt";
+
+                query = query.OrderBy($"{body.OrderBy} {body.Order}");
+
+                var totalCount = await query.CountAsync();
+                var pageItems = await query.AsNoTracking()
+                    .Skip((body.PageNumber - 1) * body.PageSize)
+                    .Take(body.PageSize)
+                    .ToListAsync();
+
+                return new PagedResults<MonthlySnapshot>
+                {
+                    Items = pageItems,
+                    PageNumber = body.PageNumber,
+                    PageSize = body.PageSize,
+                    TotalCount = totalCount
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error fetching MonthlySnapshot: {ex.Message}", ex);
+            }
         }
 
         /// <inheritdoc />
@@ -42,7 +69,7 @@ namespace DAL.Repositories
                 IQueryable<MonthlySnapshot> query = _entities
                     .Where(s => s.UserId == userId)
                     .OrderByDescending(s => s.CreatedAt)
-                    .Include(s => s.WeeklyBudgets)
+                    .Include(s => s.WeeklyBudgets).ThenInclude(w=>w.Expenses)
                     .Include(s => s.Triggers);
 
                 query = body.Filter?.GetWhereStatment(query) ?? query;

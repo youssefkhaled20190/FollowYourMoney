@@ -1,4 +1,4 @@
-﻿using BLL.Services;
+using BLL.Services;
 using Shared.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +19,6 @@ namespace API.Controllers
         }
 
         [HttpPost("Register")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
             var registerResult = await _authService.Register(dto);
@@ -35,16 +34,38 @@ namespace API.Controllers
             var loginResult = await _authService.Login(dto);
             if (!loginResult.Result.Succeeded)
                 return Unauthorized();
-            if (loginResult.ChangePassword == true)
+
+            string userName = "";
+            string userRole = loginResult.Role ?? "";
+
+            if (!string.IsNullOrEmpty(loginResult.Token))
             {
-                return Ok(new { Token = loginResult.Token, DefaultPage = "Auth/ChangePassword" });
+                Response.Cookies.Append("jwt", loginResult.Token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    Path = "/"
+                });
+
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(loginResult.Token);
+                userName = jwtToken.Claims.FirstOrDefault(c => c.Type == "unique_name" || c.Type == ClaimTypes.Name)?.Value ?? "";
             }
+
             string defaultPage = "";
-            if (User.IsInRole("Admin"))
+            if (userRole == "Admin")
             {
                 defaultPage = "";
             }
-            return Ok(new { Token = loginResult.Token, DefaultPage = defaultPage });
+
+            if (loginResult.ChangePassword == true)
+            {
+                return Ok(new { Result = true, UserName = userName, UserRole = userRole, DefaultPage = "Auth/ChangePassword" });
+            }
+
+            return Ok(new { Result = true, UserName = userName, UserRole = userRole, DefaultPage = defaultPage });
         }
 
         [HttpPost("CheckRole")]
@@ -80,6 +101,13 @@ namespace API.Controllers
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var rslt = await _authService.ChangePassword(userId ?? "", formBody);
                 await this.blockToken();
+                Response.Cookies.Delete("jwt", new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                    Path = "/"
+                });
                 return Ok(new { rslt = rslt, message = "Password changed successfully", DefaultPage = "Auth/Login" });
             }
             catch (Exception ex)
@@ -92,25 +120,32 @@ namespace API.Controllers
         [Authorize]
         public IActionResult CheckLogins()
         {
-            return StatusCode(200, new GeneralResponseDto { Result = true, Message = "Already loged in" });
+            var userName = User.Identity?.Name ?? User.FindFirstValue(ClaimTypes.Name) ?? "";
+            var userRole = User.FindFirstValue(ClaimTypes.Role) ?? "";
+            return Ok(new { Result = true, Message = "Already logged in", UserName = userName, UserRole = userRole });
         }
 
         [HttpPost("Logout")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
             await this.blockToken();
+            Response.Cookies.Delete("jwt", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/"
+            });
             return Ok(new { rslt = true, message = "Logged out successfully" });
         }
 
         [HttpPost("resetPassword/{id}")]
         [Authorize(Roles = "Admin")]
-
         public async Task<bool> ResetPassword([FromBody] ChangePasswordDto dto, string id)
         {
             var isReset = await _authService.ResetPassword(id, dto.NewPassword);
             return isReset;
-
         }
 
         [HttpGet("ReAssign")]
@@ -127,14 +162,40 @@ namespace API.Controllers
             var Token = await _authService.ReGenerateToken(userId!);
             if (string.IsNullOrEmpty(Token))
                 return Ok(new { Result = false, Message = "An error occurred while log in" });
-            return Ok(new { Result = true, Token = Token });
+
+            Response.Cookies.Append("jwt", Token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(7),
+                Path = "/"
+            });
+
+            var userName = User.Identity?.Name ?? User.FindFirstValue(ClaimTypes.Name) ?? "";
+            var userRole = User.FindFirstValue(ClaimTypes.Role) ?? "";
+
+            return Ok(new { Result = true, UserName = userName, UserRole = userRole });
         }
 
         private async Task blockToken()
         {
             var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            await _authService.Logout(token);
+            if ((string.IsNullOrEmpty(token) || token == "cookie") && Request.Cookies.ContainsKey("jwt"))
+            {
+                token = Request.Cookies["jwt"];
+            }
+            if (!string.IsNullOrEmpty(token) && token != "cookie")
+            {
+                try
+                {
+                    await _authService.Logout(token);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error blocking token: {ex.Message}");
+                }
+            }
         }
-
     }
 }

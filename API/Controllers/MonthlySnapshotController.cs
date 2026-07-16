@@ -18,11 +18,15 @@ namespace API.Controllers
             _service = service;
         }
 
-        /// <summary>Returns the latest snapshot with weekly budgets and wishlist ETA summary.</summary>
+        /// <summary>
+        /// Returns a snapshot with weekly budgets and wishlist ETA summary.
+        /// If year/month filter is provided, returns that specific month's snapshot.
+        /// If no filter, returns the latest (most recent) snapshot.
+        /// </summary>
         [HttpGet("Latest")]
-        public async Task<ActionResult> GetLatest()
+        public async Task<ActionResult> GetLatest([FromQuery] RequestDto<MonthlySnapshotFilter> body)
         {
-            var result = await _service.GetLatestAsync(CurrentUserId);
+            var result = await _service.GetLatestAsync(CurrentUserId, body);
             if (result is null)
                 return StatusCode(200, new GeneralResponseDto
                 {
@@ -84,6 +88,24 @@ namespace API.Controllers
                 Result = true,
                 Message = "Plan recalculated successfully",
                 Data = result
+            });
+        }
+
+        /// <summary>
+        /// Edits/updates the monthly blueprint.
+        /// </summary>
+        [HttpPut("Update")]
+        public async Task<ActionResult> Update([FromBody] EditSnapshotDto dto)
+        {
+            var updated = await _service.UpdateAsync(dto, CurrentUserId);
+            if (updated is null)
+                return StatusCode(200, new GeneralResponseDto { Result = false, Message = "Could not update plan" });
+
+            return StatusCode(200, new GeneralResponseDto
+            {
+                Result = true,
+                Message = "Monthly plan updated successfully",
+                Data = updated
             });
         }
     }

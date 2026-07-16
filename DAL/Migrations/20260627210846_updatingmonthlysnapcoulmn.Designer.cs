@@ -4,6 +4,7 @@ using DAL.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260627210846_updatingmonthlysnapcoulmn")]
+    partial class updatingmonthlysnapcoulmn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,10 +165,6 @@ namespace DAL.Migrations
                         .HasColumnName("pkInstallmentId");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InstallmentId"));
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date")
-                        .HasColumnName("fldEndDate");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit")
@@ -459,7 +458,7 @@ namespace DAL.Migrations
                         {
                             Id = "b7e10136-59d9-4908-8546-264213377dd9",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "86772632-e68b-4751-94da-342805b7b8d9",
+                            ConcurrencyStamp = "522aa340-f39c-4da0-ab26-912b16064993",
                             Email = "admin@MoneyFollow.com",
                             EmailConfirmed = false,
                             FullName = "Admin",
@@ -470,7 +469,7 @@ namespace DAL.Migrations
                             NormalizedUserName = "ADMIN",
                             PasswordHash = "AQAAAAIAAYagAAAAEPFctG6LS8KiYEVdI0doV499jipmFK/3jNgFVjDcPHTor8FuU9BswnPGKzXHt2gLaA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "277e05e6-3b6a-4f56-a850-f57f4434fd56",
+                            SecurityStamp = "ec0717b7-ed32-4094-8ae8-f837eff7cf68",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         });

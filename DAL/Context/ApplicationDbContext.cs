@@ -1,4 +1,4 @@
-﻿using DAL.Model;
+using DAL.Model;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -84,13 +84,13 @@ namespace DAL.Context
                 e.Property(x => x.Salary).HasColumnType("decimal(18,2)");
                 e.Property(x => x.Bonuses).HasColumnType("decimal(18,2)");
                 e.Property(x => x.CarryOver).HasColumnType("decimal(18,2)");
+                e.Property(x => x.CarryOverGoal).HasColumnType("decimal(18,2)");
                 e.Property(x => x.TotalCommitments).HasColumnType("decimal(18,2)");
                 e.Property(x => x.FreeCash).HasColumnType("decimal(18,2)");
                 e.Property(x => x.AllocatedToWishlist).HasColumnType("decimal(18,2)");
                 e.Property(x => x.WeeklyBudget).HasColumnType("decimal(18,2)");
-
-                // TotalIncome computed — مش بيتحفظ في الـ DB
-                e.Ignore(x => x.TotalIncome);
+                e.Property(x => x.WishlistPercentage).HasColumnType("decimal(18,2)");
+                e.Property(x => x.CustomWeeklyBudget).HasColumnType("decimal(18,2)");
 
                 // index عشان نجيب آخر snapshot للـ user بسرعة
                 e.HasIndex(x => new { x.UserId, x.Year, x.Month });
@@ -141,7 +141,7 @@ namespace DAL.Context
                 e.HasKey(x => x.ItemId);
                 e.Property(x => x.TargetAmount).HasColumnType("decimal(18,2)");
                 e.Property(x => x.SavedAmount).HasColumnType("decimal(18,2)");
-                e.Ignore(x => x.Remaining);
+                e.Property(x => x.SavePercentage).HasColumnType("decimal(18,2)");
                 e.HasIndex(x => new { x.UserId, x.Priority });
             });
 

@@ -8,30 +8,32 @@ namespace Shared.DTO
         public decimal SavedAmount { get; set; }
         public int Priority { get; set; }   // 1 = most important
         public bool IsAchieved { get; set; }
+        public bool IsCritical { get; set; }
 
-        // Computed — not stored in DB
-        public decimal Remaining => TargetAmount - SavedAmount;
+        public DateOnly? DueDate { get; set; }
+        public decimal SavePercentage { get; set; }
+
+        // Computed by service — not stored in DB
+        public decimal Remaining { get; set; }
 
         /// <summary>
-        /// Estimated months to reach this goal.
-        /// Populated by the service using the latest snapshot's FreeCash
+        /// Estimated days to reach this goal.
+        /// Populated by the service using the user's monthly savings allocation
         /// and the priority ordering of all pending items.
+        /// -1 means no savings allocated.
         /// </summary>
-        public decimal EtaMonths { get; set; }
+        public int EtaDays { get; set; }
 
-        /// <summary>Human-readable ETA label.</summary>
-        public string EtaLabel
-        {
-            get
-            {
-                if (IsAchieved || EtaMonths <= 0) return "Achieved";
-                var months = (int)Math.Ceiling(EtaMonths);
-                var years = months / 12;
-                var rem = months % 12;
-                if (years == 0) return $"{rem} month{(rem != 1 ? "s" : "")}";
-                if (rem == 0) return $"{years} year{(years != 1 ? "s" : "")}";
-                return $"{years} year{(years != 1 ? "s" : "")} {rem} month{(rem != 1 ? "s" : "")}";
-            }
-        }
+        /// <summary>
+        /// Human-readable ETA label, e.g. "3 days", "2 weeks", "1 month 2 weeks".
+        /// Populated by the service.
+        /// </summary>
+        public string EtaLabel { get; set; } = string.Empty;
+
+        // Date-based goals properties
+        public decimal RequiredMonthlySaving { get; set; }
+        public decimal ActualMonthlySave { get; set; }
+        public decimal RequiredPercentage { get; set; }
+        public string StatusLabel { get; set; } = string.Empty;
     }
 }

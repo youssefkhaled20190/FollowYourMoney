@@ -6,7 +6,7 @@ namespace Shared.DTO
     {
         [Required]
         public string UserName { get; set; } = string.Empty;
-        [Required, RegularExpression(@"^[^@\s]+@egyptair\.com$", ErrorMessage = "Email must be on the domain."), EmailAddress]
+        [Required, RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Please enter a valid email address."), EmailAddress]
         public string Email { get; set; } = string.Empty;
         [Required, MinLength(6), DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;

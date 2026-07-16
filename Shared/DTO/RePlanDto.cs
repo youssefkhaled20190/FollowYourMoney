@@ -8,5 +8,11 @@ namespace Shared.DTO
     {
         public decimal CashInHand { get; set; }
         public string? Note { get; set; }
+
+        /// <summary>
+        /// Optional — allows the user to adjust their savings target during replan.
+        /// If null, the existing CarryOverGoal is preserved.
+        /// </summary>
+        public decimal? CarryOverGoal { get; set; }
     }
 }

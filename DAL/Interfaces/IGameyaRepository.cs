@@ -1,4 +1,4 @@
-﻿using DAL.Filter;
+using DAL.Filter;
 using DAL.Model;
 using DAL.Repositories;
 using Shared.DTO;
@@ -14,6 +14,7 @@ namespace DAL.Interfaces
     public interface IGameyaRepository : IGeneric<Gameya>
     {
         Task<PagedResults<Gameya>> GetActiveByUserAsync(string userId , RequestDto<WithOutFilter> body);
+        Task<PagedResults<Gameya>> GetAllByUserAsync(string userId, RequestDto<WithOutFilter> body);
         //Get The History of Specific Gameya for the user
         Task<Gameya?> GetWithPaymentsAsync(int gameyaId, string userId);
     }
